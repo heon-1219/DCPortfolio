@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>Tessera / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; Tessera</p>
+      <h1 class="project-page-title">Tessera</h1>
+      <p class="project-subtitle">Offline encrypted NFC medical records</p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> During high-stress military field operations or emergency triage scenarios, medics require instant access to a casualty's critical medical history (blood type, severe allergies, active prescriptions). However, active combat zones are highly disconnected, making cloud-based records impossible, while printing physical cards is highly prone to wear, loss, and unauthorized disclosure of sensitive data.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I gathered and led the team to build <em>Tessera</em>, an offline medical-records system. It stores compressed, AES-256-GCM encrypted medical records on standard-issue NFC dog tags. Medics use a rugged, low-cost handheld scanner built with an ESP32 WROOM-32D, PN532 NFC reader, and TFT display. The scanner reads the tag, derives a unique per-tag key using HKDF-SHA256, decrypts the payload with a pre-flashed master key index, and displays emergency details in under 1 second without any internet dependency.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        Tessera is an offline military medical-records system built around encrypted NFC dog
+        tags. It combines a Windows admin station, an encrypted local database, NFC provisioning,
+        and ESP32 field-reader hardware for disconnected environments.
+      </p>
+
+      <h2>Recognition</h2>
+      <p>
+        I gathered and led the Tessera team, helping guide the product, software, security,
+        and hardware plan. The project placed 7th out of 700 teams in the ROK Army business
+        competition, and was awarded and promoted by the Korea Economic Daily News and the ROK
+        Department of Defense.
+      </p>
+
+      <figure class="media-card full-aspect">
+        <img src="../../assets/tessera-award-optimized.jpg" alt="Tessera award photo" />
+        <figcaption style="padding: 0.85em 1em; text-align: center;">
+          <strong>Award Presentation Ceremony:</strong> Our team was promoted and awarded by the Korea Economic Daily News and the ROK Department of Defense, securing a spot for the next-stage national competition.
+        </figcaption>
+      </figure>
+
+      <p>
+        We are now preparing for the next-level competition: the ROK Department of Defense
+        business competition. That next phase is focused on hardening the prototype, improving
+        the field-reader workflow, and making the system easier to evaluate as a practical
+        military medical-records tool.
+      </p>
+
+      <h2>System Architecture</h2>
+      <p>
+        Tessera operates entirely offline. The PC station provisions tags via USB serial, while the handheld ESP32 unit performs cryptographic decryption in the field.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>System Architecture</h3>
+        <svg viewBox="0 0 800 320" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-tessera" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow-tessera" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <rect x="30" y="80" width="190" height="110" rx="8" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow-tessera)" />
+          <text x="125" y="110" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#3b0764" text-anchor="middle">PC Admin Station</text>
+          <text x="125" y="130" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">PySide6 Desktop Client,</text>
+          <text x="125" y="145" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">SQLCipher Local Database,</text>
+          <text x="125" y="160" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">Tag Provisioning Serial Loop</text>
+
+          <rect x="350" y="80" width="220" height="110" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow-tessera)" />
+          <text x="460" y="110" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#083344" text-anchor="middle">ESP32 Handheld Unit</text>
+          <text x="460" y="130" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">ESP32 WROOM-32D (firmware),</text>
+          <text x="460" y="145" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">PN532 NFC reader (SPI),</text>
+          <text x="460" y="160" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">ILI9341 TFT Display, 6 Buttons</text>
+
+          <rect x="650" y="80" width="120" height="110" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-tessera)" />
+          <text x="710" y="115" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#052e16" text-anchor="middle">NFC Dog Tag</text>
+          <text x="710" y="135" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">NTAG215 Chip,</text>
+          <text x="710" y="150" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Compressed</text>
+          <text x="710" y="165" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">AES-GCM Payload</text>
+
+          <path d="M 220 120 L 350 120" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-tessera)" />
+          <path d="M 350 145 L 220 145" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-tessera)" />
+          <text x="285" y="105" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Provision (framed serial)</text>
+          <text x="285" y="160" font-family="Courier, monospace" font-size="9" fill="#475569" text-anchor="middle">CRC16 Audits</text>
+
+          <path d="M 570 125 L 650 125" stroke="#16a34a" stroke-dasharray="3,3" stroke-width="2" marker-end="url(#arrow-tessera)" />
+          <path d="M 650 145 L 570 145" stroke="#16a34a" stroke-dasharray="3,3" stroke-width="2" marker-end="url(#arrow-tessera)" />
+          <text x="610" y="112" font-family="Helvetica, sans-serif" font-size="9" fill="#15803d" text-anchor="middle">RF Scan</text>
+          <text x="610" y="162" font-family="Helvetica, sans-serif" font-size="8" fill="#15803d" text-anchor="middle">13.56 MHz</text>
+        </svg>
+      </div>
+
+      <h2>The System Overview</h2>
+      <p>
+        Tessera has two sides. The PC station registers personnel, encrypts records, and writes
+        payloads to NFC tags. The field unit uses ESP32 hardware with a PN532 NFC reader and
+        TFT display to read a tag, decrypt the payload with a pre-flashed master key, and show
+        the record in the field.
+      </p>
+
+      <figure class="media-card">
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 4px;">
+          <iframe
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;"
+            src="https://www.youtube.com/embed/3_H07vFSLuQ?autoplay=1&mute=1&loop=1&playlist=3_H07vFSLuQ&controls=0&playsinline=1&rel=0&modestbranding=1"
+            title="Tessera demo video"
+            allow="autoplay; encrypted-media; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+        <figcaption style="padding: 0.85em 1em;">
+          <strong>Tessera System Demo (NFC 스캔 동작):</strong> Demonstrates the offline scan-to-screen workflow. When an encrypted tag is scanned, the ESP32 handheld unit decrypts the payload immediately and renders critical triage fields on the TFT screen.
+        </figcaption>
+      </figure>
+
+      <p>
+        The prototype was designed around low-cost, rapidly available parts: an ESP32 WROOM
+        32D NodeMCU, PN532 NFC module, small TFT/OLED display, half-size breadboard, and Dupont
+        wiring. The target scanner bill of materials was roughly USD 20 to 25 (KRW 26,000 to 32,000),
+        with NFC tag cost under USD 0.80 (KRW 1,000), making the concept realistic for unit-level field trials.
+      </p>
+
+      <h2>Hardware Bring-Up &amp; Prototype Phases</h2>
+      <p>
+        Hardware construction followed a rigorous staged testing approach. The process moved from bare breadboards to fully enclosed handheld medical scanners.
+      </p>
+
+      <div class="figure-grid" style="margin-bottom: 2em;">
+        <figure class="media-card">
+          <img src="../../assets/initialtesseranfctest.jpg" alt="Initial Tessera ESP32 and NFC scanner breadboard test" loading="lazy" />
+          <figcaption>
+            <strong>Breadboard Verification:</strong> The initial wiring phase validating raw SPI bus communications between the ESP32 and the PN532 module. This proved that card detection was working before we designed display routines.
+          </figcaption>
+        </figure>
+        <figure class="media-card">
+          <img src="../../assets/workingontessera.jpg" alt="Tessera electronics workbench during prototype development" loading="lazy" />
+          <figcaption>
+            <strong>Workbench Bring-Up:</strong> Mounting the modules, testing logic voltage levels, and integrating I2C/SPI lines under careful laboratory conditions to ensure no conflict on the shared power rails.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>Handheld Scanner Device &amp; Field GUI</h2>
+      <p>
+        The scanner is fully self-contained. The local OLED/TFT graphic display has been built to output critical medical fields instantly.
+      </p>
+
+      <div class="figure-grid" style="margin-bottom: 2em; justify-items: center;">
+        <figure class="media-card" style="max-width: 380px; margin: 0;">
+          <img src="../../assets/tesserascannerinside.jpg" alt="Inside the Tessera scanner prototype showing display and wiring" loading="lazy" />
+          <figcaption>
+            <strong>Internal Wiring:</strong> The compact arrangement inside our custom handheld enclosure. It packs the ESP32 dev kit, the reader board, TFT connection pins, and the rechargeable battery interface in a robust layout.
+          </figcaption>
+        </figure>
+        <figure class="media-card" style="max-width: 380px; margin: 0;">
+          <img src="../../assets/tesseradevice.jpg" alt="Tessera handheld scanner displaying encrypted medical record sample" loading="lazy" />
+          <figcaption>
+            <strong>Casualty Screen:</strong> The scanner OLED displaying emergency fields. It outputs severe warnings like Penicillin anaphylaxis and Type 1 diabetes - insulin dependent to help medics implement immediate emergency treatment if they detect decreased consciousness or difficulty breathing, while strictly enforcing no penicillin/cephalosporin.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>A Python/PySide6 desktop station design with an encrypted records database.</li>
+        <li>A frozen byte-level NFC payload format compatible with ESP32 firmware.</li>
+        <li>A cryptographic design using AES-256-GCM, HKDF-SHA256, PBKDF2-HMAC-SHA256, and authenticated headers.</li>
+        <li>A serial protocol for PC-to-ESP32 provisioning using framed messages and CRC16 checks.</li>
+        <li>A six-page admin dashboard layer for station overview, units, personnel, access logs, reports, and settings.</li>
+      </ul>
+
+      <h2>Security Model</h2>
+      <p>
+        Records on the PC are encrypted at rest. The station master key is wrapped under a
+        password-derived key, and tag payloads use per-tag derived keys based on normalized
+        service identifiers. GCM additional authenticated data binds headers, identity hash,
+        and length fields to prevent splicing or downgrade attacks.
+      </p>
+      <p>
+        The tag format separates lookup metadata from the encrypted medical payload. The reader
+        extracts the service identifier and initialization vector, derives the per-tag key,
+        decrypts with AES-256-GCM, verifies integrity, then decompresses the payload for display.
+        The point of the design was to keep emergency reads fast while avoiding plaintext
+        medical data on the tag.
+      </p>
+
+      <h2>Hardware Bring-Up</h2>
+      <p>
+        The hardware plan is staged for debugging: ESP32 alone, then PN532 NFC over SPI, then
+        the ILI9341 TFT on the shared SPI bus, then the six-button module. Each stage has a
+        verification target so hardware faults can be isolated before adding the next component.
+      </p>
+      <p>
+        In the early wiring plan, the ESP32 distributes 3.3V power across the breadboard and
+        keeps the NFC reader and display on separate communication paths to reduce bus conflicts.
+        The PN532 scanner uses the ESP32 SPI pins for clock, MISO, MOSI, and chip select, while
+        the display uses the ESP32's I2C display pins in the simpler prototype configuration.
+        A key constraint was avoiding 5V logic on the PN532 or display modules.
+      </p>
+
+      <h2>Offline Provisioning</h2>
+      <p>
+        The PC-side provisioning station was designed for medics or unit administrators working
+        without network access. It normalizes both U.S. DoD-style identifiers and ROKA service
+        numbers before encryption so the same identifier always produces the same derived-key
+        input. The local records database is encrypted at rest, and the interface focuses on
+        clean data entry, tag provisioning, access logs, and auditability rather than cloud sync.
+      </p>
+
+      <h2>Stack</h2>
+      <p>
+        Python 3.12, PySide6, Streamlit prototypes, cryptography, SQLite / SQLCipher design,
+        zlib, pyserial, PyInstaller, ESP32 WROOM 32D, PN532 NFC, ILI9341 / OLED display,
+        AES-GCM, HKDF, PBKDF2.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>

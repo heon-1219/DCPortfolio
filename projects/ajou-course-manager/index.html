@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>Ajou Course Manager / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; Ajou Course Manager</p>
+      <h1 class="project-page-title">Ajou Course Manager</h1>
+      <p class="project-subtitle">Medical school course administration</p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> Medical school course administration at Ajou University was heavily bogged down by thousands of rows of scattered spreadsheets, duplicate entry efforts, and syllabus formats that were hard to audit or keep consistent. Staff members had to spend weeks manually transcribing course schedules and lecture rosters, which frequently led to scheduling overlaps, role permission violations, and fragmented historical records.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I built <em>Ajou Course Manager</em>, a production-grade course administration web platform. It unifies course tracking, course plans, lectures, user permissions, audit trails, and automated spreadsheet import/export paths in one secure workflow. By utilizing a highly structured relational database and an AI-driven syllabus ingestion module, the system converts hundreds of hours of manual work into a clean, drag-and-drop, and reviewable process.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        Ajou Course Manager is a full-stack administration platform for Ajou University
+        School of Medicine. The app supports the daily work of education administrators,
+        academic-year administrators, course directors, and lecturers: course registration,
+        course-plan editing, lecture scheduling, reports, analytics, account management,
+        and role-scoped audit logs.
+      </p>
+
+      <h2>System Architecture</h2>
+      <p>
+        To support high reliability, role-scoped access control, and seamless AI document ingestion, the system is designed around a decoupled client-server architecture with an isolated relational data layer.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>System Architecture</h3>
+        <svg viewBox="0 0 800 280" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- Definitions for markers and shadows -->
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <!-- React Client -->
+          <rect x="30" y="80" width="180" height="90" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow)" />
+          <text x="120" y="115" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#083344" text-anchor="middle">React &amp; Vite SPA</text>
+          <text x="120" y="135" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">Course Filters, Calendar,</text>
+          <text x="120" y="150" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">Admin Controls (Tailwind)</text>
+
+          <!-- DRF Backend -->
+          <rect x="310" y="80" width="190" height="90" rx="8" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow)" />
+          <text x="405" y="115" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#3b0764" text-anchor="middle">Django REST Backend</text>
+          <text x="405" y="135" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">DRF API, JWT Auth,</text>
+          <text x="405" y="150" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">XLSX parsers, Audit Logs</text>
+
+          <!-- PostgreSQL -->
+          <rect x="600" y="160" width="170" height="85" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow)" />
+          <text x="685" y="195" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#052e16" text-anchor="middle">PostgreSQL 16</text>
+          <text x="685" y="215" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Users, Courses, Plans,</text>
+          <text x="685" y="230" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Lectures, Audit Logs</text>
+
+          <!-- OpenAI -->
+          <rect x="600" y="30" width="170" height="85" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2" filter="url(#shadow)" />
+          <text x="685" y="65" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#451a03" text-anchor="middle">OpenAI API</text>
+          <text x="685" y="85" font-family="Helvetica, sans-serif" font-size="11" fill="#b45309" text-anchor="middle">Syllabus PDF / HWP</text>
+          <text x="685" y="100" font-family="Helvetica, sans-serif" font-size="11" fill="#b45309" text-anchor="middle">AI Ingestion Pipeline</text>
+
+          <!-- Arrows -->
+          <!-- Client <-> Django -->
+          <path d="M 210 110 L 310 110" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" />
+          <path d="M 310 140 L 210 140" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" />
+          <text x="260" y="102" font-family="Helvetica, sans-serif" font-size="10" fill="#475569" text-anchor="middle">JWT API Req</text>
+          <text x="260" y="153" font-family="Helvetica, sans-serif" font-size="10" fill="#475569" text-anchor="middle">JSON Data</text>
+
+          <!-- Django <-> Postgres -->
+          <path d="M 500 140 L 600 180" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" />
+          <path d="M 600 190 L 500 150" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" />
+          <text x="548" y="152" font-family="Helvetica, sans-serif" font-size="10" fill="#475569" text-anchor="middle">SQL Queries</text>
+
+          <!-- Django <-> OpenAI -->
+          <path d="M 500 110 L 600 90" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" />
+          <path d="M 600 70 L 500 90" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" />
+          <text x="550" y="85" font-family="Helvetica, sans-serif" font-size="10" fill="#475569" text-anchor="middle">Parsed Text</text>
+        </svg>
+      </div>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>JWT-authenticated Django REST APIs for users, courses, course plans, lectures, analytics, and audit logs.</li>
+        <li>React/Vite dashboard screens for course list views, calendar views, plan editing, lecture workflows, analytics, logs, and admin account tools.</li>
+        <li>Role-aware access for EDU_ADMIN, ACADEMIC_ADMIN_N, COURSE_DIRECTOR, and LECTURER users.</li>
+        <li>XLSX import/export paths for professor accounts, course master data, course plans, and lecture schedules.</li>
+        <li>AI-assisted PDF/HWP/HWPX course-plan ingestion that extracts structured course and lecture data before applying it to the database.</li>
+        <li>Audit logs that preserve who created or edited course, course-plan, and lecture records, with queryset scopes by role.</li>
+      </ul>
+
+      <h2>Workflow Details</h2>
+      <p>
+        The course-management screen supports multiple ways to inspect the same academic data:
+        table view for bulk administration, calendar view for schedule reasoning, and
+        grade/year filters for academic-year administrators. Course directors can be searched
+        and matched by name, professor ID, affiliation, email, and phone metadata. The system
+        also supports merging duplicate course records when a course plan and lecture schedule
+        arrive as separate source files.
+      </p>
+
+      <figure class="media-card full-aspect">
+        <img src="../../assets/ajou-courses-ui.png" alt="Ajou Course Manager course table interface" />
+        <figcaption style="padding: 0.85em 1em;">
+          <strong>Course Management Surface (과정 관리):</strong> The primary interface for education administrators. It features rapid filters for academic year (학년별 보기), calendars (캘린더 보기), and a comprehensive master table (모두 보기). Administrative staff can trigger bulk spreadsheet tasks or perform course merges easily in this unified view.
+        </figcaption>
+      </figure>
+
+      <p>
+        The course-plan workflow is built around the institution's existing plan structure.
+        It includes nine plan sections, controlled input rules, read-only lecturer access where
+        appropriate, and XLSX export so administrators can still produce familiar documents.
+        For lecture schedules, the app handles period ranges, start/end times, recurring dates,
+        previous-year import, and manual calendar adjustment before saving.
+      </p>
+
+      <figure class="media-card full-aspect">
+        <img src="../../assets/ajou-plans-ui.png" alt="Ajou Course Manager course plan editor interface" />
+        <figcaption style="padding: 0.85em 1em;">
+          <strong>Course Plan Workflow (과정계획서 관리):</strong> This editor supports the nine required syllabus sections. Responsibility is split dynamically based on roles: lecturers (강의교수) have view-only access to prevent accidental overrides, while course directors (책임교수) can draft fields with AI assistance (AI 작성) and save (저장) or download (다운로드) the finished product.
+        </figcaption>
+      </figure>
+
+      <h2>Implementation</h2>
+      <p>
+        The backend uses Django, Django REST Framework, PostgreSQL, and Docker Compose.
+        Object-level permission classes keep lecturer edits scoped to lectures they are assigned
+        to, while admin and course-director roles can access broader workflows. The spreadsheet
+        paths use structured parsing rather than fragile column assumptions: course import uses
+        header-based lookup and alias normalization, while course-plan export maps fields into
+        the institution's template.
+      </p>
+      <p>
+        The AI document path extracts text from PDF, HWP, and HWPX files, asks the model for
+        structured course and lecture data, matches existing courses by course name and director
+        metadata, then applies the result to course plans and lecture rows. The goal was not to
+        replace review, but to turn repetitive document transcription into a reviewable workflow.
+      </p>
+
+      <div class="meta-list">
+        <div class="box">
+          <div class="dense">
+            <h3>Frontend</h3>
+            React + Vite
+          </div>
+          <p class="small">Course, plan, lecture, analytics, logs, and admin screens with role-aware UI states.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Backend</h3>
+            Django REST Framework
+          </div>
+          <p class="small">JWT auth, object permissions, XLSX services, AI document parsing, and audit history.</p>
+        </div>
+      </div>
+
+      <h2>Stack</h2>
+      <p>
+        React, Vite, Django, Django REST Framework, PostgreSQL, Docker Compose, OpenAI API,
+        openpyxl, pdfminer.six, olefile, uv, npm.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>Sisyphus / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; Sisyphus</p>
+      <h1 class="project-page-title">Sisyphus</h1>
+      <p class="project-subtitle">AI augmented focus tracker and game-launch speed bump</p>
+      <p class="available-line">
+        Available at:
+        <a href="https://sisyphusfocus.site" target="_blank" rel="noreferrer">sisyphusfocus.site</a>
+      </p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> Digital distraction and impulsive game launches (like League of Legends) are friction-free, often triggered automatically by muscle memory when a user encounters a small mental barrier during work. Standard website blockers or lock-down tools are overly coercive, triggering a defensive reaction where the user simply uninstalls the blocker, rather than training their focus habits.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I built <em>Sisyphus</em>, a lightweight Windows utility that acts as a deliberate "speed bump." Using Windows Image File Execution Options (IFEO) registry hooks, Sisyphus intercepts game launches before the process executes. Instead of locking down the PC, it displays a checklist dashboard. The user must check off their actual work items before the game opens, introducing a mindful delay that breaks the automatic loop of distraction.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        Sisyphus is a Windows desktop app that intercepts impulsive game launches and displays
+        a todo checklist first. Once every item is checked, the original game launches normally.
+        It was built for League of Legends, but it can block any `.exe`.
+      </p>
+
+      <h2>System Architecture &amp; Windows Internals</h2>
+      <p>
+        Sisyphus uses native Windows internals to achieve fail-safe executable interception. Rather than running a CPU-heavy background watchdog process, it registers itself directly under Image File Execution Options (IFEO) in the Windows Registry.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>Process Interception Flow (IFEO Registry Hook)</h3>
+        <svg viewBox="0 0 800 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-sisyphus" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow-sisyphus" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <!-- User Launch -->
+          <rect x="20" y="90" width="140" height="70" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5" filter="url(#shadow-sisyphus)" />
+          <text x="90" y="120" font-family="Helvetica, sans-serif" font-weight="bold" font-size="12" fill="#334155" text-anchor="middle">User triggers</text>
+          <text x="90" y="138" font-family="Courier, monospace" font-size="11" fill="#475569" text-anchor="middle">game.exe</text>
+
+          <!-- Windows OS Process Creator -->
+          <rect x="195" y="90" width="150" height="70" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2" filter="url(#shadow-sisyphus)" />
+          <text x="270" y="120" font-family="Helvetica, sans-serif" font-weight="bold" font-size="12" fill="#1e3a8a" text-anchor="middle">Windows OS</text>
+          <text x="270" y="138" font-family="Helvetica, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle">Checks IFEO Registry</text>
+
+          <!-- IFEO Hook Sisyphus Launcher -->
+          <rect x="375" y="90" width="170" height="70" rx="6" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow-sisyphus)" />
+          <text x="460" y="120" font-family="Courier, monospace" font-weight="bold" font-size="12" fill="#3b0764" text-anchor="middle">Sisyphus.Launcher.exe</text>
+          <text x="460" y="138" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">WPF Checklist UI</text>
+
+          <!-- Target Game Launch -->
+          <rect x="635" y="180" width="145" height="70" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-sisyphus)" />
+          <text x="707" y="210" font-family="Helvetica, sans-serif" font-weight="bold" font-size="12" fill="#052e16" text-anchor="middle">Real Game Launched</text>
+          <text x="707" y="228" font-family="Courier, monospace" font-size="11" fill="#15803d" text-anchor="middle">SISYPHUS_BYPASS=1</text>
+
+          <!-- Abort Launch -->
+          <rect x="635" y="40" width="145" height="70" rx="6" fill="#fff5f5" stroke="#e03131" stroke-width="1.5" filter="url(#shadow-sisyphus)" />
+          <text x="707" y="70" font-family="Helvetica, sans-serif" font-weight="bold" font-size="12" fill="#c92a2a" text-anchor="middle">Process Cancelled</text>
+          <text x="707" y="88" font-family="Helvetica, sans-serif" font-size="11" fill="#e03131" text-anchor="middle">User returns to work</text>
+
+          <!-- Connections -->
+          <path d="M 160 125 L 195 125" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-sisyphus)" />
+          <path d="M 345 125 L 375 125" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-sisyphus)" />
+
+          <!-- Decisional Arrows from Launcher -->
+          <path d="M 545 110 L 635 75" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-sisyphus)" />
+          <text x="590" y="80" font-family="Helvetica, sans-serif" font-size="10" fill="#475569" text-anchor="middle">Close / Bypass X</text>
+
+          <path d="M 545 140 L 635 195" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-sisyphus)" />
+          <text x="590" y="185" font-family="Helvetica, sans-serif" font-size="10" fill="#475569" text-anchor="middle">Todos Done</text>
+        </svg>
+      </div>
+
+      <figure class="media-card full-aspect" style="max-width: 720px; margin: 2em auto;">
+        <img src="../../assets/vibecodingwtessera.jpg" alt="Sisyphus planning and coding session outdoors" loading="lazy" />
+        <figcaption style="padding: 1.25em 1.5em; text-align: center; font-size: 1.08em;">
+          <strong>Sisyphus planning and coding session outdoors:</strong> Sisyphus running on a laptop during a vibe-coding session outside. Testing software load and process intercept triggers under high-glare outdoor focus conditions to verify display contrast and checklist gate responsiveness.
+        </figcaption>
+      </figure>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>A compact WPF dashboard with custom terminal-style windows and popups.</li>
+        <li>IFEO-based executable blocking that works without a watchdog service.</li>
+        <li>A launcher gate that receives the original executable path, shows todos, and launches the game only after completion.</li>
+        <li>Todo targets for software paths, websites, folders, and optional music URLs.</li>
+        <li>Foreground activity tracking with day, week, month, year, and custom-range analytics.</li>
+      </ul>
+
+      <h2>Windows Internals</h2>
+      <p>
+        Sisyphus writes a `Debugger` value under Image File Execution Options for the blocked
+        executable name. When Windows tries to launch that executable, it runs
+        `Sisyphus.Launcher.exe` first. To prevent recursion, the launcher starts the real app
+        with a bypass environment variable and debugger-style process creation.
+      </p>
+
+      <h2>Design Choices</h2>
+      <p>
+        The app is intentionally transparent: config is plain JSON under `%APPDATA%`, blocks
+        are removable from the UI, and there is no password or anti-tamper mechanism. The goal
+        is friction and visibility, not coercive control.
+      </p>
+
+      <h2>Stack</h2>
+      <p>
+        .NET 8, WPF, Windows Registry, IFEO, JSON persistence, foreground window tracking,
+        Inno Setup, x64 Windows packaging.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>

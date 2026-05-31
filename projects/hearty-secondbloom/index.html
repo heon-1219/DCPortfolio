@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>Hearty / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; Hearty</p>
+      <h1 class="project-page-title">Hearty</h1>
+      <p class="project-subtitle">AI concierge MVP for active seniors</p>
+      <p class="available-line">
+        Available at:
+        <a href="https://d2jc32x9xxe9d3.cloudfront.net/" target="_blank" rel="noreferrer">d2jc32x9xxe9d3.cloudfront.net</a>
+      </p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> Many active seniors and adult learners start lifestyle courses (like classical instruments, golf, or cooking) with high enthusiasm but drop out within a few weeks. Standard directories or marketplaces offer hundreds of scattered listings but fail to support the end-to-end learning journey, leaving seniors feeling overwhelmed, unguided, and disconnected during their initial lesson stages.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I built <em>Hearty</em>, a deployed web MVP focusing on course completion rather than simple registration. Seniors are onboarded through a conversational AI voice assistant (Evelyn) that conducts a comfortable diagnosis to extract schedules and barriers. The system seeds a structured 12-session learning workspace with active milestones, manager notifications, lesson check-ins, and direct message lines, deployed using Next.js on CloudFront and an AWS Chalice/Neon Postgres backend.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        Hearty is a deployed web MVP for Korean adult learners and active seniors. The product
+        combines a polished public landing page, an onboarding diagnosis flow, sample login,
+        dashboard screens, schedule, records, messages, notifications, and backend-backed user
+        data. The current deployment is live through CloudFront and backed by an AWS Chalice API.
+      </p>
+
+      <h2>System Architecture</h2>
+      <p>
+        The system is built static-first for ultra-low hosting costs, leveraging AWS serverless compute and serverless relational storage.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>System Architecture</h3>
+        <svg viewBox="0 0 800 290" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-hearty" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow-hearty" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <!-- S3 + CloudFront Client -->
+          <rect x="30" y="80" width="190" height="95" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow-hearty)" />
+          <text x="125" y="110" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#083344" text-anchor="middle">Next.js Client (S3)</text>
+          <text x="125" y="130" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">CloudFront CDN Delivery,</text>
+          <text x="125" y="145" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">Static Export, React SPA</text>
+
+          <!-- AWS Chalice Lambda -->
+          <rect x="310" y="80" width="200" height="95" rx="8" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow-hearty)" />
+          <text x="410" y="110" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#3b0764" text-anchor="middle">AWS Chalice Backend</text>
+          <text x="410" y="130" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">API Gateway + Lambda,</text>
+          <text x="410" y="145" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">JWT Signups, Tenant isolation</text>
+
+          <!-- Neon Postgres -->
+          <rect x="600" y="160" width="170" height="85" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-hearty)" />
+          <text x="685" y="195" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#052e16" text-anchor="middle">Neon Postgres</text>
+          <text x="685" y="215" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Serverless PostgreSQL,</text>
+          <text x="685" y="230" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Relational Schema</text>
+
+          <!-- Gemini Voice AI -->
+          <rect x="600" y="30" width="170" height="85" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2" filter="url(#shadow-hearty)" />
+          <text x="685" y="65" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#451a03" text-anchor="middle">Gemini API</text>
+          <text x="685" y="85" font-family="Helvetica, sans-serif" font-size="11" fill="#b45309" text-anchor="middle">Evelyn AI Concierge,</text>
+          <text x="685" y="100" font-family="Helvetica, sans-serif" font-size="11" fill="#b45309" text-anchor="middle">Voice Diagnosis Extraction</text>
+
+          <!-- Connectors -->
+          <path d="M 220 115 L 310 115" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-hearty)" />
+          <path d="M 310 140 L 220 140" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-hearty)" />
+          <text x="265" y="105" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">API Calls (JWT)</text>
+          <text x="265" y="152" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">JSON Data</text>
+
+          <path d="M 510 140 L 600 180" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-hearty)" />
+          <text x="555" y="150" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Neon SQL</text>
+
+          <path d="M 510 115 L 600 90" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-hearty)" />
+          <text x="555" y="95" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Gemini Prompt</text>
+        </svg>
+      </div>
+
+      <h2>Product Flow</h2>
+      <p>
+        The landing page frames the product around completion rather than simple registration:
+        AI helps a user find a suitable activity, and a dedicated manager supports the 3-month
+        journey. The diagnosis page introduces Evelyn, the AI concierge, as a conversational
+        onboarding agent. After signup or sample login, the app can seed a starter workspace
+        with a plan, lessons, records, messages, and notifications so the dashboard feels like
+        an actual service instead of an empty prototype.
+      </p>
+
+      <h2>Landing Page &amp; Conversational Onboarding</h2>
+      <p>
+        Hearty's client interfaces use warm, highly readable layouts tailored for elder accessibility. They feature large font ranges and a relaxed, voice-guided conversational flow.
+      </p>
+
+      <div class="figure-grid" style="margin-bottom: 2em;">
+        <figure class="media-card" style="margin: 0;">
+          <img src="../../assets/hearty-landing-ui.png" alt="Hearty deployed landing page" loading="lazy" />
+          <figcaption style="padding: 0.85em 1em;">
+            <strong>Eldercare Landing Page (시작은 늘 했습니다. 이번엔, 끝까지):</strong> Focuses on course completion. Active seniors are welcomed with a clear call-to-action button (무료 진단 시작) to kick off the conversational diagnostic onboarding.
+          </figcaption>
+        </figure>
+        <figure class="media-card" style="margin: 0;">
+          <img src="../../assets/hearty-diagnosis-ui.png" alt="Hearty AI concierge diagnosis screen" loading="lazy" />
+          <figcaption style="padding: 0.85em 1em;">
+            <strong>Conversational Onboarding Concierge (에블린과의 대화):</strong> Driven by Evelyn, the AI agent. Users can trigger a comfortable 5-minute mic conversation (마이크를 눌러 에블린과 대화를 시작하세요). Evelyn analyzes audio files dynamically in the background to suggest a customized course plan.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>A static-export Next.js 16 frontend hosted from private S3 through CloudFront.</li>
+        <li>A serverless AWS Chalice backend deployed through API Gateway and Lambda in Seoul.</li>
+        <li>Neon Postgres schema and migrations for users, profiles, plans, lessons, activity logs, messages, notifications, OAuth tickets, and sessions.</li>
+        <li>JWT signup/login, sample-account login, Google OAuth flow, and Kakao OAuth groundwork.</li>
+        <li>Live dashboard routes for home, schedule, records, messages, notifications, and diagnosis-result save.</li>
+        <li>AI concierge screens and prompt design for Evelyn, including voice-diagnosis structure and user-profile extraction.</li>
+      </ul>
+
+      <h2>Architecture</h2>
+      <p>
+        Hearty is intentionally static-first. The frontend builds into plain files under
+        <code>frontend/out</code>, uploads to private S3, and is served through CloudFront.
+        Browser requests call the API Gateway endpoint, which invokes a Chalice Lambda connected
+        to Neon Postgres. This keeps hosting simple and inexpensive while still supporting live
+        authentication and dashboard data.
+      </p>
+      <p>
+        The backend API includes health checks, signup/login, sample login, OAuth start/callback,
+        current-user lookup, dashboard data, plans, lessons, activity logs, messages,
+        notifications, and diagnosis-result saving. Resource reads follow a tenant-isolation
+        rule: if a logged-in user should not see a resource, the API returns 404 rather than
+        revealing whether that resource exists.
+      </p>
+
+      <div class="meta-list">
+        <div class="box">
+          <div class="dense">
+            <h3>Frontend</h3>
+            Next.js static export
+          </div>
+          <p class="small">CloudFront + private S3 delivery for landing, onboarding, auth, and dashboard pages.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Backend</h3>
+            Chalice Lambda
+          </div>
+          <p class="small">API Gateway, JWT auth, sample workspaces, live records, messages, and notifications.</p>
+        </div>
+      </div>
+
+      <h2>Operations</h2>
+      <p>
+        The repo includes deployment scripts for provisioning the frontend bucket, uploading the
+        static build, invalidating CloudFront, and deploying the Chalice backend. The README also
+        records the current CDN URL, backend API URL, AWS region, and Neon database setup so the
+        project can be handed off or resumed without rediscovering infrastructure details.
+      </p>
+
+      <h2>Stack</h2>
+      <p>
+        Next.js 16, React 19, TypeScript, AWS S3, CloudFront, API Gateway, AWS Lambda,
+        AWS Chalice, Python 3.12, Neon Postgres, JWT, Zustand, TanStack Query, Google GenAI.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>

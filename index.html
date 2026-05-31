@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>Portfolio / Seheon David Chang</title>
+    <meta
+      name="description"
+      content="Software engineering portfolio for Seheon David Chang: full-stack apps, AI products, paper trading automation, desktop software, and secure NFC hardware software."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header class="row">
+        <img id="profile-picture" src="assets/profile-photo.jpg" alt="Seheon David Chang" />
+        <div>
+          <div class="dense">
+            <h1>Seheon David Chang</h1>
+            <button class="contact-line email-copy" type="button" data-copy="seheon.chang@gmail.com" aria-label="Copy email address">
+              seheon.chang@gmail.com
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <p>
+        Hello, and welcome to my personal portfolio! I'm a third year at
+        <a href="https://www.cs.utexas.edu/" target="_blank" rel="noreferrer">UT Austin</a>
+        studying EE&CS. I am currently on a gap year completing my Korean mandatory service as a
+        <a href="https://en.wikipedia.org/wiki/Korean_Augmentation_to_the_United_States_Army" target="_blank" rel="noreferrer">KATUSA</a>,
+        working alongside the US Army.
+        I focus on building practical AI tools for everyday problems. Outside of work, I spend my time playing
+        <a href="https://www.youtube.com/watch?v=xjz4JhaBWNA" target="_blank" rel="noreferrer">classical piano</a>,
+        training in the gym, or working on one of the
+        <a href="#projects">personal projects below</a>!
+      </p>
+
+      <div class="center subtitle" id="links">
+        <a class="icon-link" href="https://github.com/heon-1219" target="_blank" rel="noreferrer" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03A9.5 9.5 0 0 1 12 7c.85 0 1.7.11 2.5.33 1.9-1.3 2.74-1.03 2.74-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.58c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+          GitHub
+        </a>
+        <a class="icon-link" href="https://www.linkedin.com/in/david-chang-466022236/" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5.001 2.5 2.5 0 0 1 0-5ZM3 9.6h4v11.9H3V9.6Zm6.3 0h3.82v1.62h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.65 4.78 6.1v6.13h-4v-5.44c0-1.3-.02-2.96-1.8-2.96-1.8 0-2.08 1.41-2.08 2.86v5.54h-4V9.6Z"/></svg>
+          LinkedIn
+        </a>
+        <span class="icon-link unavailable" title="Resume PDF not added yet" aria-label="Resume not added yet">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v15H6V2Zm7 1.7V8h4.3L13 3.7ZM8 11h8v1.5H8V11Zm0 3.5h8V16H8v-1.5Zm0 3.5h5v1.5H8V18Z"/></svg>
+          Resume
+        </span>
+        <a class="icon-link" href="https://www.youtube.com/@Seheon-1219" target="_blank" rel="noreferrer" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2s-.2-1.5-.8-2.1c-.8-.8-1.6-.8-2-.9C16 4 12 4 12 4s-4 0-6.8.2c-.4 0-1.3.1-2 .9-.6.6-.8 2.1-.8 2.1S2 9 2 10.9v1.8c0 1.9.4 3.7.4 3.7s.2 1.5.8 2.1c.8.8 1.8.8 2.3.9 1.7.2 6.5.2 6.5.2s4 0 6.8-.2c.4 0 1.3-.1 2-.9.6-.6.8-2.1.8-2.1s.4-1.8.4-3.7v-1.8c0-1.9-.4-3.7-.4-3.7ZM10 15.4V8.6l6 3.4-6 3.4Z"/></svg>
+          YouTube
+        </a>
+      </div>
+
+      <section id="projects">
+        <h2>Project Highlight</h2>
+        <div class="grid">
+          <article class="large-box">
+            <div class="dense">
+              <h3>Tessera</h3>
+              Offline encrypted NFC medical records
+            </div>
+            <div class="project-preview split-preview">
+              <iframe
+                src="https://www.youtube.com/embed/3_H07vFSLuQ?autoplay=1&mute=1&loop=1&playlist=3_H07vFSLuQ&controls=0&playsinline=1&rel=0&modestbranding=1"
+                title="Tessera demo video"
+                allow="autoplay; encrypted-media; picture-in-picture; web-share"
+                allowfullscreen
+                loading="lazy"
+              ></iframe>
+              <img src="assets/tessera-award-optimized.jpg" alt="Tessera award photo" />
+            </div>
+            <p class="small">
+              Secure military medical-records system built around a Windows admin station,
+              encrypted NFC dog tags, and ESP32 field-reader hardware. Gathered and led the team
+              to 7th place out of 700 teams for the ROK Army business competition. Awarded and
+              promoted by the Korea Economic Daily News & ROK Department of Defense.
+              <a class="pseudo-link" href="projects/tessera/">Learn More...</a>
+            </p>
+          </article>
+
+          <article class="large-box">
+            <div class="dense">
+              <h3>Sisyphus</h3>
+              AI augmented focus tracker
+            </div>
+            <div class="project-preview split-preview sisyphus-split">
+              <img src="assets/sisyphus-logo-tile.png" alt="Sisyphus logo" />
+              <img src="assets/sisyphus-ui-sample.png" alt="Sisyphus app interface preview" />
+            </div>
+            <p class="small">
+              Desktop app that intercepts impulsive game launches and shows a todo checklist
+              before the game can open, with activity analytics built in.
+              <a class="pseudo-link" href="projects/sisyphus/">Learn More...</a>
+            </p>
+          </article>
+
+          <article class="large-box">
+            <div class="dense">
+              <h3>Ajou Course Manager</h3>
+              Medical school course administration
+            </div>
+            <div class="project-preview split-preview app-screens-preview">
+              <img src="assets/ajou-courses-ui.png" alt="Ajou Course Manager course table interface" />
+              <img src="assets/ajou-plans-ui.png" alt="Ajou Course Manager course plan editor interface" />
+            </div>
+            <p class="small">
+              Production-oriented system for managing professors, courses, course plans, lectures,
+              reports, permissions, analytics, audit logs, XLSX workflows, and AI document parsing.
+              <a class="pseudo-link" href="projects/ajou-course-manager/">Learn More...</a>
+            </p>
+          </article>
+
+          <article class="large-box">
+            <div class="dense">
+              <h3>KC Trading</h3>
+              Alpaca paper trading automation
+            </div>
+            <div class="project-preview split-preview app-screens-preview">
+              <img src="assets/kc-trading-dashboard-ui.png" alt="KC Trading portfolio dashboard" />
+              <img src="assets/kc-trading-controls-ui.png" alt="KC Trading strategy controls and risk limits" />
+            </div>
+            <p class="small">
+              Paper-only Alpaca trading bot running 24/7 on a VPS with portfolio metrics,
+              multi-strategy allocation, backtesting, live logs, and kill-switch controls.
+              <a class="pseudo-link" href="projects/alpaca-trading-bot/">Learn More...</a>
+            </p>
+          </article>
+
+          <article class="large-box">
+            <div class="dense">
+              <h3>Hearty</h3>
+              AI concierge MVP for active seniors
+            </div>
+            <div class="project-preview split-preview app-screens-preview hearty-screens">
+              <img src="assets/hearty-landing-ui.png" alt="Hearty deployed landing page" />
+              <img src="assets/hearty-diagnosis-ui.png" alt="Hearty AI concierge diagnosis screen" />
+            </div>
+            <p class="small">
+              Deployed web MVP for guided activity completion, AI concierge onboarding,
+              sample login, activity records, messages, notifications, and OAuth groundwork.
+              <a class="pseudo-link" href="projects/hearty-secondbloom/">Learn More...</a>
+            </p>
+          </article>
+
+          <article class="large-box">
+            <div class="dense">
+              <h3>Medical AI Application Research</h3>
+              Clinical NLP for psychiatry records and medication perception
+            </div>
+            <div class="project-preview research-preview" aria-label="Research publications">
+              <span>AI</span>
+              <span>MED</span>
+              <small>LLMs, clinical records, and public health text</small>
+            </div>
+            <p class="small">
+              Co-authored two SCI-level papers applying AI to psychiatric records and
+              antidepressant-related social media data.
+              <a class="pseudo-link" href="projects/medical-ai-application-research/">Learn More...</a>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="learning">
+        <h2>Differentiating Experiences</h2>
+        <div class="learning-grid">
+          <article class="experience-card">
+            <div class="dense">
+              <h3>KATUSA Service</h3>
+              <p class="sub-detail">56M, 8A 2ID DSB UMT</p>
+            </div>
+            <p class="description">
+              Combined Forces service, tactical translation, and religious-support operations inside a U.S.-ROK Army environment.
+            </p>
+            <button class="learn-more" type="button" data-experience="katusa">Learn More...</button>
+          </article>
+          <article class="experience-card">
+            <div class="dense">
+              <h3>Double Major</h3>
+              <p class="sub-detail">UT Austin EE&CS</p>
+            </div>
+            <p class="description">
+              One of roughly four students in my class pursuing both CS and ECE, balancing software, systems, circuits, and math-heavy engineering work.
+            </p>
+            <button class="learn-more" type="button" data-experience="double-major">Learn More...</button>
+          </article>
+          <article class="experience-card">
+            <div class="dense">
+              <h3>Tuition Through Stocks</h3>
+              <p class="sub-detail">KOSPI and automated trading</p>
+            </div>
+            <p class="description">
+              Investing and trading projects helped offset the pressure of UT tuition and living costs.
+            </p>
+            <button class="learn-more" type="button" data-experience="markets">Learn More...</button>
+          </article>
+          <article class="experience-card">
+            <div class="dense">
+              <h3>Korea and America</h3>
+              <p class="sub-detail">Two cultures</p>
+            </div>
+            <p class="description">
+              Spent 11 years in Korea and 10 in America, learning how to adapt across language, school systems, and culture.
+            </p>
+            <button class="learn-more" type="button" data-experience="cultures">Learn More...</button>
+          </article>
+        </div>
+
+        <dialog class="experience-dialog" id="experience-dialog" aria-labelledby="experience-dialog-title">
+          <button class="dialog-close" type="button" aria-label="Close popup">&times;</button>
+          <div class="dense">
+            <h3 id="experience-dialog-title"></h3>
+            <p class="dialog-subtitle" id="experience-dialog-subtitle"></p>
+          </div>
+          <div class="dialog-body" id="experience-dialog-body"></div>
+        </dialog>
+
+        <template id="experience-katusa">
+          <p>
+            I am completing my mandatory Korean military service as a KATUSA, serving as a
+            56M chaplain assistant in the 8th Army, 2nd Infantry Division Sustainment Brigade
+            Unit Ministry Team. The role placed me inside a U.S.-ROK Combined Forces
+            environment, where Korean and American soldiers plan, train, and operate together.
+            Working in that setting taught me to communicate with precision across rank,
+            language, and culture, especially when translating tactical context during combined
+            training.
+          </p>
+          <p>
+            During bootcamp, I earned Commandant's List by ranking top 4 out of 160 soldiers
+            in my graduating class. I later received both the Army Achievement Medal and the
+            Army Commendation Medal from Major General Lombardo for tactical translation
+            services that helped bridge Korean and U.S. personnel during field operations.
+            I also had opportunities to work with UNC and meet the Secretary of War and USFK
+            General Brunson, which made the scale and purpose of combined service feel much
+            more real and inspiring.
+          </p>
+          <div class="service-gallery" data-carousel aria-label="KATUSA service photos">
+            <figure>
+              <img src="assets/brunson.jpg" alt="USFK leadership event during KATUSA service" loading="lazy" />
+              <figcaption>First-ever combined wet gap crossing with GEN Brunson</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/medic.jpg" alt="Field medical support environment during KATUSA service" loading="lazy" />
+              <figcaption>Mass casualty care training with 65 MED Brigade</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/mewgun.jpg" alt="Combined training environment during KATUSA service" loading="lazy" />
+              <figcaption>Combined training environment</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/helicopter.jpg" alt="Aviation training environment during KATUSA service" loading="lazy" />
+              <figcaption>Combined Noncombatant Evacuation Operation</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/howihadtowork.jpg" alt="Barracks work setup during KATUSA service" loading="lazy" />
+              <figcaption>Balancing service with project work after duty</figcaption>
+            </figure>
+          </div>
+          <div class="carousel-dots" aria-label="KATUSA photo slider position"></div>
+        </template>
+        <template id="experience-double-major">
+          <p>
+            At UT Austin, I am studying EE&CS as one of roughly four students in my graduating
+            class pursuing both Computer Science and Electrical and Computer Engineering. The
+            path exposed me to two demanding ways of thinking: software abstraction, algorithms,
+            and systems on one side, and circuits, hardware constraints, and math-heavy
+            engineering on the other.
+          </p>
+          <p>
+            Accepting that workload also opened doors to competitive student organizations and
+            department-level opportunities. Through
+            <a href="https://txconvergent.org/" target="_blank" rel="noreferrer">Texas Convergent</a>,
+            I built an NFC sleep alarm and pitched it to more than 200 students in the
+            organization, which pushed me to think about engineering as both a technical build
+            and a product story. I also had the
+            chance to interview faculty applicants to the ECE department, giving me a rare look
+            at how a top engineering department evaluates future professors and research
+            directions.
+          </p>
+          <p>
+            On the research side, I led paper discussions with two PhD students through
+            <a href="https://sites.google.com/view/utdirp/home" target="_blank" rel="noreferrer">DiRP</a>,
+            UT Austin's Directed Reading Program for computer science. Those discussions made
+            research feel more active and conversational: not just reading a paper, but asking
+            what assumptions it makes, where the method breaks, and how the idea could turn
+            into something buildable.
+          </p>
+          <p>
+            Taking both majors has often meant carrying a workload beyond what felt comfortable.
+            Over time, that became useful training. It taught me how to break large technical
+            problems into pieces, keep moving when the schedule is tight, and build projects
+            that respect both product behavior and engineering limits.
+          </p>
+        </template>
+        <template id="experience-markets">
+          <p>
+            Being an international out-of-state student at UT Austin made money feel very
+            concrete very quickly. Tuition, housing, food, transportation, and the ordinary
+            costs of living in the United States created a level of pressure that was difficult
+            to ignore. I started investing partly because I wanted to understand markets, but
+            also because I needed to take financial responsibility seriously.
+          </p>
+          <p>
+            I was fortunate to invest during a bullish KOSPI cycle driven by HBM and NAND-Flash
+            demand. To make better decisions, I taught myself basic accounting and macroeconomic
+            concepts, then began building projects that tried to understand the market
+            numerically instead of only emotionally. Through investments in Samsung and SK
+            Hynix, I recorded +230% total P&L during the cycle.
+          </p>
+          <p>
+            I later tested a
+            <a href="projects/alpaca-trading-bot/">fully automated paper-trading system</a>
+            in U.S. markets. The system recorded +15% total P&L while trading through the
+            U.S.-Iran conflict period, which gave me confidence that the strategy could keep
+            functioning during volatile, headline-driven conditions. That result pushed me
+            further toward systematic investing, paper trading infrastructure, and risk-aware
+            automation.
+          </p>
+          <p>
+            The experience also changed how I read the world. I started paying closer attention
+            to global news, supply chains, interest rates, sector cycles, and where capital was
+            moving. Over time, I began to think of money almost like physics: larger masses of
+            capital create stronger gravity, attracting attention, liquidity, talent, and even
+            more capital. That mental model is not perfect, but it helped me see markets as
+            systems with forces, feedback loops, and measurable behavior.
+          </p>
+        </template>
+        <template id="experience-cultures">
+          <p>
+            I spent 11 years in Korea and 10 years in America. When I was 10, I moved to
+            Oklahoma with my mother and entered public school before I could speak English.
+            That experience was uncomfortable, but it became the first real proof that I could
+            rebuild myself in a new environment by observing carefully, asking for help, and
+            improving a little every day.
+          </p>
+          <p>
+            After three years in Oklahoma, I returned to Korean middle school and experienced
+            the typical Korean academic system: repetition, memorization, long hours, and
+            constant comparison against peers. I learned discipline from it, but I also realized
+            that simply competing inside a fixed track was not the way I wanted to grow.
+          </p>
+          <p>
+            I then spent a year as an exchange student in Missouri. COVID-19 broke out during
+            that period, so the normal exchange-student experience disappeared almost overnight.
+            Instead of treating the year as lost time, I tried to get something meaningful out
+            of it by helping create virtual activities that local students could still join and
+            use to stay connected.
+          </p>
+          <p>
+            Later, when I decided that I wanted to attend college in the United States, I applied
+            to The Stony Brook School in New York. Living there gave me a broader view of the
+            U.S. beyond the Midwest, and being near Renaissance Technologies sparked my early
+            curiosity about quantitative finance: the idea that mathematics, computing, and
+            markets could intersect. I see myself as a true combination of Korean and American
+            cultures, shaped by both systems rather than only one.
+          </p>
+        </template>
+      </section>
+
+    </main>
+
+    <script>
+      const emailButton = document.querySelector(".email-copy");
+
+      emailButton?.addEventListener("click", async () => {
+        const email = emailButton.dataset.copy;
+        try {
+          await navigator.clipboard.writeText(email);
+          emailButton.textContent = "Copied: " + email;
+          window.setTimeout(() => {
+            emailButton.textContent = email;
+          }, 1400);
+        } catch {
+          emailButton.textContent = email;
+        }
+      });
+
+      const experienceDetails = {
+        katusa: ["KATUSA Service", "56M, 8A 2ID DSB UMT"],
+        "double-major": ["Double Major", "UT Austin EE&CS"],
+        markets: ["Tuition Through Stocks", "KOSPI and automated trading"],
+        cultures: ["Korea and America", "Two cultures"],
+      };
+      const experienceDialog = document.querySelector("#experience-dialog");
+      const experienceTitle = document.querySelector("#experience-dialog-title");
+      const experienceSubtitle = document.querySelector("#experience-dialog-subtitle");
+      const experienceBody = document.querySelector("#experience-dialog-body");
+      let carouselTimer;
+
+      const stopCarousel = () => {
+        window.clearInterval(carouselTimer);
+        carouselTimer = undefined;
+      };
+
+      const startCarousel = () => {
+        stopCarousel();
+        const carousel = experienceBody.querySelector("[data-carousel]");
+        const slides = Array.from(carousel?.querySelectorAll("figure") || []);
+        const dots = experienceBody.querySelector(".carousel-dots");
+        if (!carousel || slides.length === 0 || !dots) return;
+
+        let currentSlide = 0;
+        dots.replaceChildren(
+          ...slides.map((_, index) => {
+            const dot = document.createElement("button");
+            dot.type = "button";
+            dot.setAttribute("aria-label", "Show KATUSA photo " + (index + 1));
+            dot.addEventListener("click", () => {
+              currentSlide = index;
+              showSlide(currentSlide);
+            });
+            return dot;
+          })
+        );
+
+        const dotButtons = Array.from(dots.querySelectorAll("button"));
+        const showSlide = (index) => {
+          currentSlide = index;
+          const targetLeft = slides[currentSlide].offsetLeft - carousel.offsetLeft;
+          carousel.scrollTo({ left: targetLeft, behavior: "smooth" });
+          dotButtons.forEach((dot, dotIndex) => {
+            dot.classList.toggle("active", dotIndex === currentSlide);
+            dot.setAttribute("aria-current", dotIndex === currentSlide ? "true" : "false");
+          });
+        };
+
+        showSlide(currentSlide);
+
+        carouselTimer = window.setInterval(() => {
+          showSlide((currentSlide + 1) % slides.length);
+        }, 3000);
+      };
+
+      document.querySelectorAll("[data-experience]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const key = button.dataset.experience;
+          const template = document.querySelector("#experience-" + key);
+          const detail = experienceDetails[key];
+
+          if (!template || !detail || !experienceDialog) return;
+
+          experienceTitle.textContent = detail[0];
+          experienceSubtitle.textContent = detail[1];
+          experienceBody.replaceChildren(template.content.cloneNode(true));
+          experienceDialog.showModal();
+          startCarousel();
+        });
+      });
+
+      document.querySelector(".dialog-close")?.addEventListener("click", () => {
+        experienceDialog?.close();
+      });
+
+      experienceDialog?.addEventListener("click", (event) => {
+        if (event.target === experienceDialog) {
+          experienceDialog.close();
+        }
+      });
+
+      experienceDialog?.addEventListener("close", stopCarousel);
+    </script>
+  </body>
+</html>

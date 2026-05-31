@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>KC Trading / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; KC Trading</p>
+      <h1 class="project-page-title">KC Trading</h1>
+      <p class="project-subtitle">Alpaca paper trading automation</p>
+      <p class="available-line">
+        Available at:
+        <a href="http://kctrading.xyz" target="_blank" rel="noreferrer">kctrading.xyz</a>
+      </p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> I wanted a robust environment to rigorously backtest and live-evaluate systematic trading strategies in real market conditions. However, doing so manually is highly prone to human error, emotional trades, and lag, while executing arbitrary scripts carries the extreme risk of accidentally touching real-money accounts. I needed a secure sandbox with built-in capital safety gates and continuous execution.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I built <em>KC Trading</em>, an automated paper-only trading station deployed 24/7 on an Ubuntu VPS. It combines a continuous Python trading loop with a local SQLite state engine and an interactive Streamlit console. The broker wrapper strictly hardcodes Alpaca\'s simulation API (`paper=True`) to make real-money access impossible, while integrating automated Telegram notifications and risk-based circuit breakers for bulletproof safety.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        KC Trading is a single-user paper trading platform built around Alpaca. The project has
+        two long-running surfaces: a background trading bot and a Streamlit dashboard. The bot
+        can keep evaluating markets on a VPS, while the dashboard gives me a browser-based
+        command center for portfolio metrics, strategy allocation, backtests, logs, safety
+        events, and server health.
+      </p>
+
+      <h2>System Architecture</h2>
+      <p>
+        The system isolates trading decisions, safety controls, and real-time visualization. It runs as two separate systemd services sharing an SQLite ledger in WAL (Write-Ahead Logging) mode.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>System Architecture</h3>
+        <svg viewBox="0 0 800 320" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-kc" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow-kc" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <!-- VPS border container -->
+          <rect x="15" y="15" width="560" height="290" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4" />
+          <text x="30" y="38" font-family="Helvetica, sans-serif" font-weight="bold" font-size="11" fill="#64748b">VULTR UBUNTU VPS (systemd managed)</text>
+
+          <!-- 24/7 Bot Loop -->
+          <rect x="35" y="60" width="220" height="95" rx="8" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow-kc)" />
+          <text x="145" y="90" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#3b0764" text-anchor="middle">24/7 Trading Loop Bot</text>
+          <text x="145" y="110" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">Evaluates signals, audits risk,</text>
+          <text x="145" y="125" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">dispatches yfinance / Alpaca API</text>
+
+          <!-- Streamlit Dashboard -->
+          <rect x="315" y="60" width="220" height="95" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow-kc)" />
+          <text x="425" y="90" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#083344" text-anchor="middle">Streamlit Web Dashboard</text>
+          <text x="425" y="110" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">Renders metrics, equity curve,</text>
+          <text x="425" y="125" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">strategy config, backtests</text>
+
+          <!-- SQLite WAL -->
+          <rect x="35" y="200" width="500" height="80" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-kc)" />
+          <text x="285" y="230" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#052e16" text-anchor="middle">SQLite WAL Database (Write-Ahead Logging)</text>
+          <text x="285" y="250" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">AccountSnapshots | Trades | StrategyConfigs | SafetyEvents</text>
+
+          <!-- Alpaca API -->
+          <rect x="620" y="30" width="160" height="75" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5" filter="url(#shadow-kc)" />
+          <text x="700" y="58" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#451a03" text-anchor="middle">Alpaca REST API</text>
+          <text x="700" y="78" font-family="Courier, monospace" font-size="11" fill="#b45309" text-anchor="middle">paper=True</text>
+
+          <!-- yfinance -->
+          <rect x="620" y="120" width="160" height="75" rx="6" fill="#fdf2f8" stroke="#db2777" stroke-width="1.5" filter="url(#shadow-kc)" />
+          <text x="700" y="152" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#500724" text-anchor="middle">yfinance API</text>
+          <text x="700" y="172" font-family="Helvetica, sans-serif" font-size="11" fill="#be185d" text-anchor="middle">Historical data &amp; snaps</text>
+
+          <!-- Telegram API -->
+          <rect x="620" y="210" width="160" height="75" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" filter="url(#shadow-kc)" />
+          <text x="700" y="242" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#1e3a8a" text-anchor="middle">Telegram Bot API</text>
+          <text x="700" y="262" font-family="Helvetica, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle">Alerts, heartbeats</text>
+
+          <!-- Connection Arrows -->
+          <!-- Bot Write DB -->
+          <path d="M 100 155 L 100 200" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-kc)" />
+          <text x="115" y="180" font-family="Helvetica, sans-serif" font-size="10" fill="#475569">Writes</text>
+
+          <!-- Streamlit Read/Write DB -->
+          <path d="M 460 200 L 460 155" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-kc)" />
+          <path d="M 440 155 L 440 200" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-kc)" />
+          <text x="470" y="180" font-family="Helvetica, sans-serif" font-size="10" fill="#475569">Read/Write</text>
+
+          <!-- Bot -> Alpaca -->
+          <path d="M 255 90 L 620 60" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-kc)" />
+          <!-- Bot -> yfinance -->
+          <path d="M 255 110 L 620 140" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-kc)" />
+          <!-- Bot -> Telegram -->
+          <path d="M 220 155 L 620 220" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-kc)" />
+        </svg>
+      </div>
+
+      <h2>Safety First</h2>
+      <p>
+        The broker wrapper hardcodes Alpaca\'s paper mode with <code>paper=True</code>, so real
+        execution is intentionally impossible by design. The system also includes a master kill
+        switch, daily loss limit, max drawdown limit, runaway trade-rate detection, and safety
+        events that require manual re-enable after an automatic stop. This made the project a
+        practical automation experiment instead of an uncontrolled trading script.
+      </p>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>A Python trading loop that updates heartbeat state, evaluates strategies, checks safety gates, sends broker requests, and records trades.</li>
+        <li>A Streamlit dashboard with account balance, buying power, P&amp;L, portfolio equity, open positions, market snapshot, server status, logs, and config controls.</li>
+        <li>Multi-strategy support for RSI, MACD, Bollinger Bands, EMA crossover, Momentum, and Short MA modules.</li>
+        <li>Per-strategy capital allocation and daily top-N symbol picking from an S&amp;P 500 universe.</li>
+        <li>A backtest panel that compares strategy equity against a summed buy-and-hold baseline.</li>
+        <li>Telegram notifications for trading events, backtest summaries, errors, and safety stops.</li>
+      </ul>
+
+      <h2>Dashboard &amp; Controls</h2>
+      <p>
+        The command center is powered by Streamlit, offering rich visual data tables and charts. It communicates with the backend loop through WAL-mode SQLite reads and configuration updates.
+      </p>
+
+      <figure class="media-card full-aspect">
+        <img src="../../assets/kc-trading-dashboard-ui.png" alt="KC Trading portfolio dashboard" />
+        <figcaption style="padding: 0.85em 1em;">
+          <strong>Streamlit Portfolio Dashboard:</strong> Renders real-time server health and simulated account metrics. It provides equity growth charts, open positions with real-time unrealized P&amp;L, local server log monitors, and index market snapshots.
+        </figcaption>
+      </figure>
+
+      <figure class="media-card full-aspect">
+        <img src="../../assets/kc-trading-controls-ui.png" alt="KC Trading strategy allocation and risk controls" />
+        <figcaption style="padding: 0.85em 1em;">
+          <strong>Strategy Controls &amp; Risk Settings:</strong> This operational board lets me adjust active strategy models, modify capital allocation percentages, set daily loss limits, configure max drawdown thresholds, and engage the instant master kill switch.
+        </figcaption>
+      </figure>
+
+      <h2>Mobile Interface &amp; Telegram Alerts</h2>
+      <p>
+        Continuous VPS execution requires remote monitoring. I built responsive views and custom integrations so that the entire trading engine can be safely managed from a phone on the move.
+      </p>
+
+      <div class="figure-grid">
+        <figure class="media-card tall">
+          <img src="../../assets/kctradingfromPhone.png" alt="KC Trading mobile dashboard with P&L by position" loading="lazy" />
+          <figcaption>
+            <strong>Mobile Dashboard Interface:</strong> A optimized responsive view of the Streamlit dashboard, letting me monitor symbol allocations, active trade signals, and open position P&amp;L securely from any mobile web browser.
+          </figcaption>
+        </figure>
+        <figure class="media-card tall">
+          <img src="../../assets/kctradingfromphone2.png" alt="KC Trading Telegram bot trade alerts" loading="lazy" />
+          <figcaption>
+            <strong>Telegram Bot Alerts:</strong> The trading bot dispatches immediate push notifications for every trade event. Alerts clearly communicate the strategy module name, direction (BUY/SELL), quantity, symbol, exact execution fill price, total trade value, and overall strategy equity.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>Architecture</h2>
+      <p>
+        SQLite is the shared state layer between the bot and dashboard. WAL mode lets the
+        dashboard read state while the bot writes trades, account snapshots, config, logs,
+        API call counts, heartbeats, and safety events. Alpaca handles paper brokerage and
+        market data, yfinance supports market snapshots and backtests, and systemd runs both
+        processes on an Ubuntu Vultr VPS.
+      </p>
+      <p>
+        I separated trading logic, broker integration, strategy modules, database access,
+        notification delivery, and dashboard UI into different files. That separation made it
+        easier to add strategies without rewriting the dashboard, and easier to keep the
+        dangerous decisions centralized in the broker and safety layers.
+      </p>
+
+      <div class="meta-list">
+        <div class="box">
+          <div class="dense">
+            <h3>Bot</h3>
+            24/7 service
+          </div>
+          <p class="small">Runs every cycle, checks safety limits, evaluates strategy signals, and writes state.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Dashboard</h3>
+            Streamlit
+          </div>
+          <p class="small">View-only demo mode, portfolio charts, market snapshot, backtests, logs, and controls.</p>
+        </div>
+      </div>
+
+      <h2>Result</h2>
+      <p>
+        This became the infrastructure behind my systematic trading experiments. A paper-trading
+        run recorded +15% total P&amp;L while trading through a U.S.-Iran conflict period, which
+        gave me evidence that the system could operate through stressful news conditions while
+        preserving the safety boundary of simulated execution.
+      </p>
+
+      <h2>Stack</h2>
+      <p>
+        Python 3.12, Streamlit, alpaca-py, pandas, ta, Plotly, SQLite, psutil, yfinance,
+        Telegram Bot API, systemd, Ubuntu, Vultr, uv.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>
