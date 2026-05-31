@@ -826,3 +826,31 @@ h3 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Try Me! Interactive Tag (UX Animation Polish) */
+.interactive-tag {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.5em;
+  padding: 0.15em 0.5em;
+  font-size: 0.6em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #111111;
+  background: linear-gradient(135deg, #ffd500 0%, #ffc400 100%);
+  border-radius: 99px;
+  box-shadow: 0 2px 6px rgba(255, 213, 0, 0.2);
+  animation: gentle-pulse 2s infinite ease-in-out;
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(255, 213, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(255, 213, 0, 0.4);
+  }
+}
