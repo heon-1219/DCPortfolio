@@ -854,3 +854,65 @@ h3 {
     box-shadow: 0 4px 10px rgba(255, 213, 0, 0.4);
   }
 }
+
+/* ----------------------------------------------------------------------
+   Mobile / small-screen refinements
+   Same visual language (black/white/yellow, Open Sans, bordered cards) —
+   just stops text from cramming and fixes alignment on narrow phones.
+   ---------------------------------------------------------------------- */
+@media (max-width: 600px) {
+  body {
+    margin: 18px 16px 32px;
+  }
+
+  /* Header keeps the avatar-beside-name row, but the name no longer
+     balloons to three lines and the email no longer overflows off-screen. */
+  .row {
+    gap: 0.85em;
+  }
+
+  header.row > div {
+    flex: 1;
+    min-width: 0; /* let the text column shrink instead of pushing the email out */
+  }
+
+  #profile-picture {
+    width: 5.25rem;
+    min-width: 5.25rem;
+    height: 5.25rem;
+    margin: 0.25em 0.25em 0.25em 0;
+  }
+
+  header h1 {
+    font-size: 1.5em;
+    line-height: 1.15;
+  }
+
+  .email-copy {
+    font-size: 0.82em;
+    overflow-wrap: anywhere; /* safety net so the email is never clipped */
+  }
+
+  /* Project-highlight previews: the side-by-side thumbnails were rendering
+     as tall, skinny strips. Shorten them so they read as a tidy pair. */
+  .grid .split-preview {
+    min-height: 0;
+  }
+
+  .grid .split-preview img,
+  .grid .split-preview iframe {
+    height: 9em;
+  }
+
+  /* Architecture diagrams: the 800-wide SVG squeezed to phone width made the
+     labels microscopic. Keep a legible width and let it scroll sideways. */
+  .architecture-diagram {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1em;
+  }
+
+  .architecture-diagram svg {
+    min-width: 540px;
+  }
+}
