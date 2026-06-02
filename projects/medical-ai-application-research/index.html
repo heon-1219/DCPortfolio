@@ -34,7 +34,8 @@
         I co-authored two SCI-level medical AI papers with Ajou Medical School's biomedical
         informatics lab. The work gave me a practical introduction to how AI methods are used
         in medicine: not as isolated models, but as tools that must be evaluated against real
-        clinical language, public health behavior, and statistical evidence.
+        clinical language, public health behavior, and statistical evidence. Across the two
+        studies, the NLP pipelines drew on both BERT- and GPT-based models.
       </p>
 
       <h2>The Papers</h2>
@@ -53,7 +54,7 @@
         <div class="box">
           <div class="dense">
             <h3>Antidepressant Perception</h3>
-            PLOS ONE, 2025
+            JMIR, 2025
           </div>
           <p class="small">
             AI-based analysis of how public attitudes toward antidepressants changed over a
@@ -75,6 +76,38 @@
         think about data quality, language translation, model comparison, statistical reporting,
         and how to make AI results understandable to researchers who care about clinical meaning
         rather than only benchmark scores.
+      </p>
+
+      <h2>Engineering: Speeding Up the OHDSI ETL</h2>
+      <p>
+        Beyond the papers, my most concrete contribution was on the data pipeline. The lab's ETL
+        for transforming raw medical data into the OHDSI Common Data Model (OMOP) was written in
+        R, and its slowest stage was vocabulary mapping: converting each source code into its OMOP
+        <code>concept_id</code>. I translated the heavy R routines into Python and cut end-to-end
+        processing time by roughly 23%, almost entirely by changing how that one stage iterated.
+      </p>
+      <p>
+        The original mapping was <em>row-wise</em>. In R, <code>rowwise()</code> / <code>apply</code>
+        / a <code>for</code> loop expresses the logic literally — "for each row, look up this code
+        and replace it" — calling the lookup once per row. On a table of tens of millions of rows,
+        that pays the interpreter's per-call overhead tens of millions of times, and that tax (the
+        function dispatch, not the lookup itself) is what dominates.
+      </p>
+      <p>
+        The fix was to express the same logic as one <em>vectorized</em> operation over the whole
+        column. A vocabulary lookup is really a join between the data and the vocabulary table, so
+        in Python I used a single <code>pandas.merge</code> (or a <code>dict</code> +
+        <code>.map()</code> when the vocabulary fit in memory). That replaces repeated per-row
+        searches — O(N&times;M) — with a one-pass hash join — O(N+M) — while moving the per-element
+        loop down into pandas' compiled C/NumPy layer, where there is no per-row Python overhead.
+        The speedup comes on two axes at once: a better algorithm and far less interpreter tax.
+      </p>
+      <p>
+        This stage dominated the runtime for two reasons. It runs across every row of the largest
+        CDM tables (condition, drug, measurement, observation), and it was the hand-written part of
+        the pipeline — exactly where row-wise idioms creep in — while extract and load were already
+        delegated to an optimized database driver. Fixing the slowest idiom sitting on the
+        highest-volume operation is what bent the whole pipeline's curve.
       </p>
 
       <h2>How I Learned</h2>

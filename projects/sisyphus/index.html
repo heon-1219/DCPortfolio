@@ -32,7 +32,13 @@
       <p>
         Sisyphus is a Windows desktop app that intercepts impulsive game launches and displays
         a todo checklist first. Once every item is checked, the original game launches normally.
-        It was built for League of Legends, but it can block any `.exe`.
+        It was built for League of Legends, but it can block any <code>.exe</code> or website.
+      </p>
+      <p>
+        Beyond the launch gate, Sisyphus works as an AI-augmented focus tracker. It logs
+        categorized activity, drafts daily objectives and to-dos with AI assistance, surfaces
+        AI-generated feedback on how each day went, and nudges healthier habits with smart
+        stretch, sleep, and idle reminders.
       </p>
 
       <h2>System Architecture &amp; Windows Internals</h2>
@@ -103,7 +109,10 @@
         <li>IFEO-based executable blocking that works without a watchdog service.</li>
         <li>A launcher gate that receives the original executable path, shows todos, and launches the game only after completion.</li>
         <li>Todo targets for software paths, websites, folders, and optional music URLs.</li>
-        <li>Foreground activity tracking with day, week, month, year, and custom-range analytics.</li>
+        <li>Categorized foreground activity logging with day, week, month, year, and custom-range analytics.</li>
+        <li>AI-generated feedback that reviews logged activity and summarizes how focused each day or range was.</li>
+        <li>AI-assisted objective generation that drafts daily goals and breaks them into actionable to-dos.</li>
+        <li>Smart reminders for stretching, sleep, and long idle or continuous-use stretches.</li>
       </ul>
 
       <h2>Windows Internals</h2>
@@ -116,15 +125,38 @@
 
       <h2>Design Choices</h2>
       <p>
-        The app is intentionally transparent: config is plain JSON under `%APPDATA%`, blocks
-        are removable from the UI, and there is no password or anti-tamper mechanism. The goal
-        is friction and visibility, not coercive control.
+        The app is intentionally transparent: config is plain JSON under <code>%APPDATA%</code>,
+        blocks are removable from the UI, and there is no password or anti-tamper mechanism. The
+        goal is friction and visibility, not coercive control.
+      </p>
+
+      <h2>AI Coaching &amp; Smart Reminders</h2>
+      <p>
+        Sisyphus is more than a blocker — it doubles as a lightweight focus coach. The activity
+        tracker records and categorizes how time is actually spent, and that log feeds an AI layer
+        that generates plain-language feedback for each day or range: where focus held, where it
+        slipped, and what to adjust next. The same assistant helps at the start of a session by
+        drafting daily objectives and decomposing them into a concrete to-do list, so the checklist
+        that gates a game launch reflects real goals instead of busywork.
+      </p>
+      <p>
+        On top of focus, the app watches for healthy-habit cues and fires smart reminders to
+        stretch, wind down for sleep, and step away after long idle or continuous-use stretches.
+      </p>
+
+      <h2>Launch &amp; Traction</h2>
+      <p>
+        Sisyphus reached 40+ users within the first week of its V1.0 release through
+        <a href="https://sisyphusfocus.site" target="_blank" rel="noreferrer">sisyphusfocus.site</a>.
+        I kept an active line of communication with early users and shipped monthly updates driven
+        by their real-time feedback, refining the launch-gate flow, activity analytics, and reminder
+        behavior release over release.
       </p>
 
       <h2>Stack</h2>
       <p>
         .NET 8, WPF, Windows Registry, IFEO, JSON persistence, foreground window tracking,
-        Inno Setup, x64 Windows packaging.
+        AI/LLM integration (feedback &amp; objective generation), Inno Setup, x64 Windows packaging.
       </p>
 
       <p><a href="../../#projects">(go back)</a></p>

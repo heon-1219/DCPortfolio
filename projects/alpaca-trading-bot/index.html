@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
-    <title>KC Trading / Seheon David Chang</title>
+    <title>Alpaca Trading Bot / Seheon David Chang</title>
     <link rel="stylesheet" href="../../styles.css" />
   </head>
   <body>
     <main>
-      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; KC Trading</p>
-      <h1 class="project-page-title">KC Trading</h1>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; Alpaca Trading Bot</p>
+      <h1 class="project-page-title">Alpaca Trading Bot</h1>
       <p class="project-subtitle">Alpaca paper trading automation</p>
       <p class="available-line">
         Available at:
@@ -23,14 +23,14 @@
             <strong>The Issue:</strong> I wanted a robust environment to rigorously backtest and live-evaluate systematic trading strategies in real market conditions. However, doing so manually is highly prone to human error, emotional trades, and lag, while executing arbitrary scripts carries the extreme risk of accidentally touching real-money accounts. I needed a secure sandbox with built-in capital safety gates and continuous execution.
           </p>
           <p>
-            <strong>The Solution:</strong> I built <em>KC Trading</em>, an automated paper-only trading station deployed 24/7 on an Ubuntu VPS. It combines a continuous Python trading loop with a local SQLite state engine and an interactive Streamlit console. The broker wrapper strictly hardcodes Alpaca\'s simulation API (`paper=True`) to make real-money access impossible, while integrating automated Telegram notifications and risk-based circuit breakers for bulletproof safety.
+            <strong>The Solution:</strong> I built <em>Alpaca Trading Bot</em>, an automated paper-only trading station deployed 24/7 on an Ubuntu VPS. It combines a continuous Python trading loop with a local SQLite state engine and an interactive Streamlit console. The broker wrapper strictly hardcodes Alpaca\'s simulation API (`paper=True`) to make real-money access impossible, while integrating automated Telegram notifications and risk-based circuit breakers for bulletproof safety.
           </p>
         </div>
       </section>
 
       <h2>Overview</h2>
       <p>
-        KC Trading is a single-user paper trading platform built around Alpaca. The project has
+        Alpaca Trading Bot is a single-user paper trading platform built around Alpaca. The project has
         two long-running surfaces: a background trading bot and a Streamlit dashboard. The bot
         can keep evaluating markets on a VPS, while the dashboard gives me a browser-based
         command center for portfolio metrics, strategy allocation, backtests, logs, safety
@@ -134,14 +134,14 @@
       </p>
 
       <figure class="media-card full-aspect">
-        <img src="../../assets/kc-trading-dashboard-ui.png" alt="KC Trading portfolio dashboard" />
+        <img src="../../assets/kc-trading-dashboard-ui.png" alt="Alpaca Trading Bot portfolio dashboard" />
         <figcaption style="padding: 0.85em 1em;">
           <strong>Streamlit Portfolio Dashboard:</strong> Renders real-time server health and simulated account metrics. It provides equity growth charts, open positions with real-time unrealized P&amp;L, local server log monitors, and index market snapshots.
         </figcaption>
       </figure>
 
       <figure class="media-card full-aspect">
-        <img src="../../assets/kc-trading-controls-ui.png" alt="KC Trading strategy allocation and risk controls" />
+        <img src="../../assets/kc-trading-controls-ui.png" alt="Alpaca Trading Bot strategy allocation and risk controls" />
         <figcaption style="padding: 0.85em 1em;">
           <strong>Strategy Controls &amp; Risk Settings:</strong> This operational board lets me adjust active strategy models, modify capital allocation percentages, set daily loss limits, configure max drawdown thresholds, and engage the instant master kill switch.
         </figcaption>
@@ -154,13 +154,13 @@
 
       <div class="figure-grid">
         <figure class="media-card tall">
-          <img src="../../assets/kctradingfromPhone.png" alt="KC Trading mobile dashboard with P&L by position" loading="lazy" />
+          <img src="../../assets/kctradingfromPhone.png" alt="Alpaca Trading Bot mobile dashboard with P&L by position" loading="lazy" />
           <figcaption>
             <strong>Mobile Dashboard Interface:</strong> A optimized responsive view of the Streamlit dashboard, letting me monitor symbol allocations, active trade signals, and open position P&amp;L securely from any mobile web browser.
           </figcaption>
         </figure>
         <figure class="media-card tall">
-          <img src="../../assets/kctradingfromphone2.png" alt="KC Trading Telegram bot trade alerts" loading="lazy" />
+          <img src="../../assets/kctradingfromphone2.png" alt="Alpaca Trading Bot Telegram bot trade alerts" loading="lazy" />
           <figcaption>
             <strong>Telegram Bot Alerts:</strong> The trading bot dispatches immediate push notifications for every trade event. Alerts clearly communicate the strategy module name, direction (BUY/SELL), quantity, symbol, exact execution fill price, total trade value, and overall strategy equity.
           </figcaption>
