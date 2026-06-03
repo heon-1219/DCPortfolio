@@ -412,10 +412,13 @@
       const experienceSubtitle = document.querySelector("#experience-dialog-subtitle");
       const experienceBody = document.querySelector("#experience-dialog-body");
       let carouselTimer;
+      let resumeTimer;
 
       const stopCarousel = () => {
         window.clearInterval(carouselTimer);
         carouselTimer = undefined;
+        window.clearTimeout(resumeTimer);
+        resumeTimer = undefined;
       };
 
       const startCarousel = () => {
@@ -426,35 +429,89 @@
         if (!carousel || slides.length === 0 || !dots) return;
 
         let currentSlide = 0;
+        // True while the carousel is scrolling itself, so the program-driven
+        // scroll events are not mistaken for the user moving the photos.
+        let suppressScroll = false;
+        let suppressTimer;
+
         dots.replaceChildren(
           ...slides.map((_, index) => {
             const dot = document.createElement("button");
             dot.type = "button";
             dot.setAttribute("aria-label", "Show KATUSA photo " + (index + 1));
             dot.addEventListener("click", () => {
-              currentSlide = index;
-              showSlide(currentSlide);
+              showSlide(index);
+              pauseThenResume();
             });
             return dot;
           })
         );
 
         const dotButtons = Array.from(dots.querySelectorAll("button"));
-        const showSlide = (index) => {
-          currentSlide = index;
-          const targetLeft = slides[currentSlide].offsetLeft - carousel.offsetLeft;
-          carousel.scrollTo({ left: targetLeft, behavior: "smooth" });
+
+        const updateDots = () => {
           dotButtons.forEach((dot, dotIndex) => {
             dot.classList.toggle("active", dotIndex === currentSlide);
             dot.setAttribute("aria-current", dotIndex === currentSlide ? "true" : "false");
           });
         };
 
-        showSlide(currentSlide);
+        const showSlide = (index) => {
+          currentSlide = index;
+          suppressScroll = true;
+          window.clearTimeout(suppressTimer);
+          suppressTimer = window.setTimeout(() => {
+            suppressScroll = false;
+          }, 1000);
+          const targetLeft = slides[currentSlide].offsetLeft - carousel.offsetLeft;
+          carousel.scrollTo({ left: targetLeft, behavior: "smooth" });
+          updateDots();
+        };
 
-        carouselTimer = window.setInterval(() => {
-          showSlide((currentSlide + 1) % slides.length);
-        }, 4500);
+        // Snap currentSlide to whichever photo is actually in view, so play
+        // resumes from where the user left it.
+        const syncToCurrentPhoto = () => {
+          const position = carousel.scrollLeft;
+          let nearest = 0;
+          let nearestDistance = Infinity;
+          slides.forEach((slide, index) => {
+            const distance = Math.abs(slide.offsetLeft - carousel.offsetLeft - position);
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearest = index;
+            }
+          });
+          currentSlide = nearest;
+          updateDots();
+        };
+
+        const startAutoAdvance = () => {
+          window.clearInterval(carouselTimer);
+          carouselTimer = window.setInterval(() => {
+            showSlide((currentSlide + 1) % slides.length);
+          }, 4500);
+        };
+
+        // The user moved the photos: hold the auto-advance and resume it 4s
+        // after the last interaction, from the photo now in view.
+        const pauseThenResume = () => {
+          window.clearInterval(carouselTimer);
+          carouselTimer = undefined;
+          window.clearTimeout(resumeTimer);
+          resumeTimer = window.setTimeout(() => {
+            syncToCurrentPhoto();
+            startAutoAdvance();
+          }, 4000);
+        };
+
+        carousel.addEventListener("scroll", () => {
+          if (suppressScroll) return;
+          syncToCurrentPhoto();
+          pauseThenResume();
+        });
+
+        showSlide(currentSlide);
+        startAutoAdvance();
       };
 
       document.querySelectorAll("[data-experience]").forEach((button) => {
