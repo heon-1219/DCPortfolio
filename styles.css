@@ -86,6 +86,11 @@ h3 {
   margin: 0;
 }
 
+.tagline {
+  font-size: 0.95em;
+  margin: 0.15em 0;
+}
+
 .center {
   display: flex;
   align-items: center;
