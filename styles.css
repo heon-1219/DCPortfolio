@@ -212,6 +212,35 @@ h3 {
   cursor: default;
 }
 
+.icon-link.scholar,
+.icon-link.resume {
+  padding: 0.4em 0.95em;
+  border-radius: 999px;
+  font-weight: 700;
+  color: #000000;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.icon-link.scholar {
+  background: #fff4bf;
+  border: 1px solid #ffd500;
+}
+
+.icon-link.scholar:hover {
+  background: #ffe98a;
+  text-decoration: none;
+}
+
+.icon-link.resume {
+  background: #ffd500;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+}
+
+.icon-link.resume:hover {
+  background: #f3c800;
+  text-decoration: none;
+}
+
 .profile-mark {
   display: grid;
   place-items: center;
