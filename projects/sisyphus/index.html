@@ -30,24 +30,115 @@
 
       <h2>Overview</h2>
       <p>
-        Sisyphus is a Windows desktop app that intercepts impulsive game launches and displays
-        a todo checklist first. Once every item is checked, the original game launches normally.
-        It was built for League of Legends, but it can block any <code>.exe</code> or website.
+        Sisyphus is a Windows desktop app (now at <strong>v2.0</strong>) that puts a deliberate moment
+        of friction between you and the things that derail focus. When you launch a blocked game or open
+        a distracting website, a <strong>gate</strong> appears, and you can't proceed until you've checked
+        off the work you said you'd do first. It was built for League of Legends, but it can block any
+        <code>.exe</code> or website.
       </p>
       <p>
-        Beyond the launch gate, Sisyphus works as an AI-augmented focus tracker. It logs
-        categorized activity, drafts daily objectives and to-dos with AI assistance, surfaces
-        AI-generated feedback on how each day went, and nudges healthier habits with smart
-        stretch, sleep, and idle reminders.
+        Beyond the launch gate, Sisyphus works as an AI-augmented focus tracker. It quietly logs where
+        your screen-time actually goes, scores it against goals you set, drafts daily objectives and
+        to-dos with AI assistance, surfaces AI-generated feedback on how each day went, and nudges
+        healthier habits with smart stretch, sleep, and idle reminders. The name is the thesis: focus is
+        a boulder you push up the hill every day, and the app's job is to make the <em>right</em> action
+        the easy one and the <em>distracting</em> action require a conscious push.
       </p>
 
-      <h2>System Architecture &amp; Windows Internals</h2>
+      <h2>Design Philosophy</h2>
       <p>
-        Sisyphus uses native Windows internals to achieve fail-safe executable interception. Rather than running a CPU-heavy background watchdog process, it registers itself directly under Image File Execution Options (IFEO) in the Windows Registry.
+        Sisyphus v2.0 is built as three .NET 8 projects spanning ~50 source files, backed by 128 unit
+        tests, and ships with 5 UI languages and 8 color themes. Four principles shaped every design
+        decision underneath that.
+      </p>
+      <div class="grid">
+        <div class="large-box">
+          <h3>No server, no account</h3>
+          <p>
+            Everything lives in local JSON under <code>%AppData%\Sisyphus</code>. The only network calls
+            are an optional GitHub update check and the user's own AI provider — the API key never leaves
+            the machine. Privacy by construction.
+          </p>
+        </div>
+        <div class="large-box">
+          <h3>Pure core, thin shells</h3>
+          <p>
+            <code>Sisyphus.Core</code> holds UI-free, deterministic domain logic so it can be unit-tested
+            and shared by both the WPF app and the launcher. The decision logic of the risky features
+            (version compare, hash verify, streak math, IFEO name validation) is pure and tested.
+          </p>
+        </div>
+        <div class="large-box">
+          <h3>Best-effort enforcement, never crash</h3>
+          <p>
+            Blocking, tracking, and updating are all "best-effort": a registry hiccup or I/O blip degrades
+            gracefully (open the web page, skip a sample) rather than taking down the app. Stores swallow
+            load errors and return empty rather than throwing into the UI.
+          </p>
+        </div>
+        <div class="large-box">
+          <h3>Save-and-restart over live mutation</h3>
+          <p>
+            Theme and appearance changes persist to config and relaunch the app rather than trying to
+            re-skin every open window live (which proved unreliable in WPF). A clean restart guarantees
+            every window picks up the new palette, and config is already on disk, so nothing is lost.
+          </p>
+        </div>
+      </div>
+
+      <h2>Solution Architecture</h2>
+      <p>
+        The codebase splits into a pure domain core and two thin shells: the always-running dashboard and
+        a tiny launcher that the blocked game's IFEO key redirects to.
+      </p>
+      <div class="meta-list">
+        <div class="box">
+          <div class="dense">
+            <h3>Sisyphus.Core</h3>
+            Pure domain layer
+          </div>
+          <p class="small">
+            No WPF, mostly testable, shared by the app and launcher. Config/activity/session/allow/notes
+            stores, analytics categories, progress stats, release manifest + SHA-256 sums, the IFEO
+            registry writer, startup manager, theme presets, and the cross-process lock.
+          </p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Sisyphus.App</h3>
+            WPF dashboard &amp; host
+          </div>
+          <p class="small">
+            The composition root and every window (settings, onboarding, todos, analytics, notepad, gates)
+            plus the always-running enforcement/analytics services: activity tracker, site/app blockers,
+            foreground watcher, theme + accessibility managers, update + AI coach services.
+          </p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Sisyphus.Launcher</h3>
+            The redirect target
+          </div>
+          <p class="small">
+            The tiny process a blocked game's IFEO key points at. It parses the original command line,
+            short-circuits on a bypass flag, shows the gate, and then launches (or doesn't) the real game.
+          </p>
+        </div>
+      </div>
+      <p class="small">
+        Version is single-sourced in <code>Directory.Build.props</code>; the installer is built with Inno
+        Setup via a PowerShell script.
+      </p>
+
+      <h2>The Blocking Gate — How It Actually Works</h2>
+      <p>
+        Sisyphus blocks in <strong>three layers</strong>, because no single mechanism covers every kind of
+        program. Rather than running a CPU-heavy background watchdog, the primary layer registers directly
+        under Image File Execution Options (IFEO) in the Windows Registry.
       </p>
 
       <div class="architecture-diagram">
-        <h3>Process Interception Flow (IFEO Registry Hook)</h3>
+        <h3>Layer 1 — Process Interception Flow (IFEO Registry Hook)</h3>
         <svg viewBox="0 0 800 300" width="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <marker id="arrow-sisyphus" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -96,6 +187,40 @@
         </svg>
       </div>
 
+      <h3>Layer 1 — Image File Execution Options (IFEO) redirect</h3>
+      <p>
+        For a blocked <code>game.exe</code>, Sisyphus writes a <code>Debugger</code> value under the HKLM
+        IFEO key for that exe name (requires admin, done via an elevated <code>--set-ifeo</code> relaunch
+        of the app itself). Windows then launches the Sisyphus launcher instead of the game, passing along
+        the original command line. The security-critical trick is that the launcher then re-launches the
+        very exe that has an IFEO debugger pointing back at it. To avoid an infinite loop, it uses
+        <code>CreateProcess</code> with <code>DEBUG_ONLY_THIS_PROCESS</code> (which bypasses the
+        debuggee's IFEO key), then immediately detaches and clears kill-on-exit. The exe name is
+        normalized to a bare <code>*.exe</code> filename before it can become a registry subkey
+        (path-traversal stripped), validated by dedicated unit tests.
+      </p>
+
+      <h3>Layer 2 — AppBlocker (running-process kill)</h3>
+      <p>
+        IFEO can't catch packaged/UWP apps or processes that are already running, so a 1&nbsp;Hz timer
+        enumerates processes by name, kills blocked ones that aren't currently <em>allowed</em>, and
+        raises the gate. After a gate is passed, the exe is written to the allow store with a 12-hour
+        allowance so it isn't instantly re-killed.
+      </p>
+
+      <h3>Layer 3 — SiteBlocker (browser tab)</h3>
+      <p>
+        A second 1&nbsp;Hz timer checks whether the foreground window is a known browser whose title
+        contains a blocked brand token; if so, it sends Ctrl+W to close the tab and raises the website
+        gate, with an 8-second per-(browser, pattern) cooldown so it doesn't fight the user.
+      </p>
+      <p>
+        The <strong>allow store</strong> is shared by two processes — the launcher writes the allowance,
+        and the app's watcher prunes and reads it — so it is guarded by a cross-process mutex and atomic
+        writes. That guarantees the watcher can't drop the allowance the launcher just wrote and kill the
+        game the gate just launched.
+      </p>
+
       <figure class="media-card full-aspect" style="max-width: 720px; margin: 2em auto;">
         <img src="../../assets/vibecodingwtessera.jpg" alt="Sisyphus planning and coding session outdoors" loading="lazy" />
         <figcaption style="padding: 1.25em 1.5em; text-align: center; font-size: 1.08em;">
@@ -103,60 +228,153 @@
         </figcaption>
       </figure>
 
+      <h2>App Lifecycle &amp; Orchestration</h2>
+      <p>
+        <code>App.xaml.cs</code> is the composition root. On startup it handles the elevated
+        <code>--set-ifeo</code>/<code>--remove-ifeo</code> admin commands and exits if present; takes a
+        per-session single-instance mutex (a second launch just surfaces the existing window); applies the
+        saved color theme <em>before</em> any window loads; and registers a class-level
+        <code>Window.Loaded</code> handler so every window gets accessibility settings applied
+        automatically. It then wires the long-lived services — activity tracker, site/app blockers,
+        foreground watcher, the global notepad hotkey, and timers for stretch reminders and a 1-minute
+        tick (recurrence resets, bedtime, idle prompts) — before branching to either the first-run wizard
+        or the dashboard.
+      </p>
+      <p>
+        The app runs with <code>ShutdownMode=OnExplicitShutdown</code> and disposes every service on exit.
+        Settings changes are applied by persisting config and calling a restart that releases the
+        single-instance mutex, relaunches via <code>Environment.ProcessPath</code>, and exits.
+      </p>
+
+      <h2>Data &amp; Persistence</h2>
+      <p>
+        All state is JSON under <code>%AppData%\Sisyphus</code>, each file owned by a small repository
+        class with a consistent recipe: a cached load, an <strong>atomic temp-file write</strong> (write
+        to <code>*.tmp</code>, then <code>File.Move</code>), and a read-time <code>Normalize</code> pass
+        that trims, defaults, clamps, and migrates old data.
+      </p>
+      <ul>
+        <li><code>config.json</code> — the whole config graph: settings, blocked games/sites, todos, goals, theme/accessibility, onboarding version.</li>
+        <li><code>activity.json</code> — per-day foreground/app/task seconds (90-day prune, sub-minute session merge).</li>
+        <li><code>sessions.json</code> — per-"computer-on" sessions (sequential numbers, 50-session cap).</li>
+        <li><code>allowed.json</code> — exe → allow-until-UTC, so a just-launched game isn't re-killed (<strong>cross-process locked</strong>).</li>
+        <li><code>notes.json</code> — notepad tabs (blank notes dropped).</li>
+        <li><code>current-task.json</code> — the currently tracked "Go now" task, with staleness detection.</li>
+      </ul>
+      <p class="small">
+        Migrations are config-version aware: the v2.0 release stamps an onboarding version so the
+        "everyone re-runs setup once" upgrade fires exactly one time, and adopts a new notepad default
+        text size for users still on the old default.
+      </p>
+
+      <h2>Analytics &amp; Goals</h2>
+      <p>
+        The activity tracker samples the foreground window on a timer (driven by the foreground watcher so
+        it doesn't tight-poll), credits elapsed wall-time (capped at 1&nbsp;hour) to the current app/title
+        unless the user is idle, and persists on a 60-second cadence. A foreground detector resolves the
+        window to a (process, title) pair — with extra effort for terminals, using UI Automation tab
+        titles and a process-tree walk to label CLI tools.
+      </p>
+      <p>
+        Each app or site is classified into one of six categories, with per-process and per-site user
+        overrides plus custom categories. The Analytics window renders day, week, month, year, and session
+        ranges as bar and circle charts, a category breakdown, and most-used apps, alongside a
+        <strong>goals-first</strong> section: each goal shows a progress bar and percentage computed from
+        either the apps the user assigned to it or all time in the goal's category. The pure streak and
+        progress math uses a 10-minute "active day" floor. A "Share" button renders a progress-card image,
+        and an optional "AI grade" asks the coach for a letter grade. Sessions shorter than 15 minutes are
+        filtered out of the Session view.
+      </p>
+
+      <h2>AI Coach &amp; Smart Reminders</h2>
+      <p>
+        Sisyphus is more than a blocker — it doubles as a lightweight focus coach. The AI coach is a
+        provider-agnostic single-turn chat client (OpenAI / Anthropic / Gemini). It builds a system prompt
+        from the user's todos and goals plus a structured 7-day context JSON, and the model can return an
+        <code>upsert_goals</code> JSON plan that is parsed, clamped, and applied back into config. The API
+        key is sent only in provider headers — never logged, never in a request body. Three modes keep raw
+        JSON out of the chat surface: <em>Free</em> chat, <em>Coaching</em> (prose only), and
+        <em>Auto-plan</em> (JSON). The notepad can run a note through the same service to extract todos or
+        get coaching, so the checklist that gates a game launch reflects real goals instead of busywork.
+      </p>
+      <p>
+        On top of focus, the app watches for healthy-habit cues and fires smart reminders to stretch, wind
+        down for sleep, and step away after long idle or continuous-use stretches.
+      </p>
+
+      <h2>Theming &amp; Accessibility</h2>
+      <p>
+        Eight presets (pure data), including three light themes. Applying a theme mutates the <em>shared</em>
+        color of the seven themed brushes in place, so every consumer repaints, and the brushes carry alpha
+        for the app's translucency. A hard-won lesson fixed in v2.0: brush references inside the theme's own
+        styles and templates must use <code>{DynamicResource}</code>, not <code>{StaticResource}</code> — a
+        static setter resolves at parse time (before the theme applies) and captures the original white
+        brush, which was invisible on dark themes but unreadable white-on-light on the light themes.
+      </p>
+      <p>
+        Accessibility settings apply a text scale (a root layout transform), an optional text-color
+        override, and a font family to every window via the class-level loaded handler. The compact
+        dashboard overlay opts out of content scaling and uses its own timer-size control.
+      </p>
+
+      <h2>Self-Update &amp; Onboarding</h2>
+      <p>
+        The update service checks GitHub's "latest release" endpoint (unauthenticated) and delegates all
+        parsing and version logic to a pure, tested release-manifest type. On "Yes", the installer is
+        streamed to temp and its <strong>SHA-256 is verified</strong> against the release's
+        <code>SHA256SUMS</code> before it runs elevated and silent, after which the installer relaunches
+        Sisyphus. If a release publishes sums, a matching hash is mandatory — a missing or mismatched hash
+        aborts to the releases page rather than running an unverified binary elevated.
+      </p>
+      <p>
+        Onboarding is a 6-step wizard with a live theme preview; nothing touches the real app until Finish
+        (which persists and restarts). A version gate re-runs it once for everyone upgrading to a major
+        release, without data loss, while new installs always see it on first launch.
+      </p>
+
+      <h2>Engineering Patterns</h2>
+      <ul>
+        <li><strong>Atomic writes everywhere</strong> — temp file plus <code>File.Move(overwrite)</code>, with unique temp names where two processes may write.</li>
+        <li><strong>Dictionary localization</strong> — five locale dictionaries (en/ko/fr/es/ja) at full key parity, with <code>DynamicResource</code> for XAML, a lookup helper for code-behind, and an English-then-key fallback.</li>
+        <li><strong>Custom window chrome</strong> — borderless windows with a shared title-bar drag/min/max helper and themed control templates.</li>
+        <li><strong>Win32 interop kept alive correctly</strong> — native callback delegates are stored in fields so they aren't garbage-collected; hooks, hotkeys, and mutexes are disposed.</li>
+        <li><strong>Async UI safety</strong> — windows that run AI calls set a closing flag and bail after the await so a continuation never touches a closed window.</li>
+      </ul>
+
       <h2>What I Built</h2>
       <ul>
-        <li>A compact WPF dashboard with custom terminal-style windows and popups.</li>
-        <li>IFEO-based executable blocking that works without a watchdog service.</li>
-        <li>A launcher gate that receives the original executable path, shows todos, and launches the game only after completion.</li>
-        <li>Todo targets for software paths, websites, folders, and optional music URLs.</li>
-        <li>Categorized foreground activity logging with day, week, month, year, and custom-range analytics.</li>
-        <li>AI-generated feedback that reviews logged activity and summarizes how focused each day or range was.</li>
-        <li>AI-assisted objective generation that drafts daily goals and breaks them into actionable to-dos.</li>
+        <li>A three-layer blocking system: IFEO redirect for executables, a running-process killer for UWP/already-running apps, and a browser-tab closer for distracting sites.</li>
+        <li>A compact WPF dashboard with custom terminal-style windows and popups, plus a tiny launcher gate that receives the original executable path, shows todos, and launches the game only after completion.</li>
+        <li>A pure, unit-tested domain core (128 tests) shared by both the app and the launcher.</li>
+        <li>Atomic, normalize-on-read JSON persistence with a cross-process lock guarding the launch-allow store.</li>
+        <li>Categorized foreground activity logging with day, week, month, year, session, and custom-range analytics, plus a goals-first progress view and shareable progress cards.</li>
+        <li>A provider-agnostic AI coach (OpenAI / Anthropic / Gemini) that drafts daily objectives, decomposes them into to-dos, and gives plain-language feedback — with the API key kept on the machine.</li>
+        <li>Eight color themes (three light), five UI languages, and per-window accessibility scaling.</li>
+        <li>SHA-256-verified self-update from GitHub releases and a 6-step onboarding wizard with a live theme preview.</li>
         <li>Smart reminders for stretching, sleep, and long idle or continuous-use stretches.</li>
       </ul>
 
-      <h2>Windows Internals</h2>
-      <p>
-        Sisyphus writes a `Debugger` value under Image File Execution Options for the blocked
-        executable name. When Windows tries to launch that executable, it runs
-        `Sisyphus.Launcher.exe` first. To prevent recursion, the launcher starts the real app
-        with a bypass environment variable and debugger-style process creation.
-      </p>
-
       <h2>Design Choices</h2>
       <p>
-        The app is intentionally transparent: config is plain JSON under <code>%APPDATA%</code>,
-        blocks are removable from the UI, and there is no password or anti-tamper mechanism. The
-        goal is friction and visibility, not coercive control.
-      </p>
-
-      <h2>AI Coaching &amp; Smart Reminders</h2>
-      <p>
-        Sisyphus is more than a blocker — it doubles as a lightweight focus coach. The activity
-        tracker records and categorizes how time is actually spent, and that log feeds an AI layer
-        that generates plain-language feedback for each day or range: where focus held, where it
-        slipped, and what to adjust next. The same assistant helps at the start of a session by
-        drafting daily objectives and decomposing them into a concrete to-do list, so the checklist
-        that gates a game launch reflects real goals instead of busywork.
-      </p>
-      <p>
-        On top of focus, the app watches for healthy-habit cues and fires smart reminders to
-        stretch, wind down for sleep, and step away after long idle or continuous-use stretches.
+        The app is intentionally transparent: config is plain JSON under <code>%APPDATA%</code>, blocks
+        are removable from the UI, and there is no password or anti-tamper mechanism. The goal is friction
+        and visibility, not coercive control.
       </p>
 
       <h2>Launch &amp; Traction</h2>
       <p>
-        Sisyphus reached 50+ users within the first week of its V1.0 release through
+        Sisyphus <strong>reached 50+ users within the first week</strong> of its V1.0 release through
         <a href="https://sisyphusfocus.site" target="_blank" rel="noreferrer">sisyphusfocus.site</a>.
-        I kept an active line of communication with early users and shipped monthly updates driven
-        by their real-time feedback, refining the launch-gate flow, activity analytics, and reminder
-        behavior release over release.
+        I kept an active line of communication with early users and shipped monthly updates driven by their
+        real-time feedback, refining the launch-gate flow, activity analytics, and reminder behavior
+        release over release.
       </p>
 
       <h2>Stack</h2>
       <p>
-        .NET 8, WPF, Windows Registry, IFEO, JSON persistence, foreground window tracking,
-        AI/LLM integration (feedback &amp; objective generation), Inno Setup, x64 Windows packaging.
+        .NET 8, WPF, Windows Registry, IFEO, Win32 interop, JSON persistence, foreground window tracking,
+        cross-process locking, AI/LLM integration (OpenAI / Anthropic / Gemini), SHA-256-verified updates,
+        Inno Setup, x64 Windows packaging.
       </p>
 
       <p><a href="../../#projects">(go back)</a></p>
