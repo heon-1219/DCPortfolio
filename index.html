@@ -217,6 +217,16 @@
             </p>
             <button class="learn-more" type="button" data-experience="cultures">Learn More...</button>
           </article>
+          <article class="experience-card">
+            <div class="dense">
+              <h3>LooxidLabs Internship <span class="interactive-tag">Try Me!</span></h3>
+              <p class="sub-detail">Project Intern · Product Analytics</p>
+            </div>
+            <p class="description">
+              Paid internship during high school at a CES-winning VR startup, turning data from 200+ alpha testers into product, branding, and patent strategy.
+            </p>
+            <button class="learn-more" type="button" data-experience="looxidlabs">Learn More...</button>
+          </article>
         </div>
 
         <dialog class="experience-dialog" id="experience-dialog" aria-labelledby="experience-dialog-title">
@@ -339,6 +349,55 @@
             cultures, shaped by both systems rather than only one.
           </p>
         </template>
+        <template id="experience-looxidlabs">
+          <p>
+            During my high school years, I worked as a paid Project Intern on the Product
+            Analytics team at
+            <a href="https://looxidlabs.com/" target="_blank" rel="noreferrer">LooxidLabs</a>,
+            a CES Innovation Award-winning startup building VR and brain-computer-interface
+            technology. At the time the team was launching CarePlay, billed as the first
+            metaverse platform for mental wellbeing. Being inside an early-stage hardware
+            startup as a high schooler gave me my first real look at how a product moves from
+            prototype toward market.
+          </p>
+          <p>
+            My core work was analyzing data from 200+ alpha testers for the VR mental-health
+            device and translating their feedback into concrete recommendations across product
+            validation, branding, business strategy, and patent development. I also supported
+            the CarePlay launch event in New York, where we ran structured testing sessions and
+            watched real users react to something we had only seen as rows in a spreadsheet.
+            That experience taught me to treat user data as a story about people rather than
+            just numbers, and to connect that story back to the decisions a company actually
+            has to make.
+          </p>
+          <div class="service-gallery" data-carousel aria-label="LooxidLabs internship photos">
+            <figure>
+              <img src="assets/looxidlabs0.jpg" alt="LooxidLabs CarePlay banner: the first metaverse platform for mental wellbeing" class="portrait-fit" loading="lazy" />
+              <figcaption>CarePlay — a metaverse platform for mental wellbeing</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/looxidlabs1.JPG" alt="LooxidLabs team working together during the alpha test cycle" loading="lazy" />
+              <figcaption>Working alongside the team during the alpha test cycle</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/looxidlabs1,5.jpg" alt="CarePlay launch event signage in New York" class="portrait-fit" loading="lazy" />
+              <figcaption>CarePlay launch event in New York</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/looxidlabs2.JPG" alt="Analyzing tester data and product feedback with the team" loading="lazy" />
+              <figcaption>Analyzing tester data and product feedback</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/looxidlabs3.JPG" alt="Running testing sessions with alpha testers at numbered stations" loading="lazy" />
+              <figcaption>Running sessions with 200+ alpha testers</figcaption>
+            </figure>
+            <figure>
+              <img src="assets/looxidlabs4.JPG" alt="LooxidLabs team standup and product validation work" loading="lazy" />
+              <figcaption>Daily standup and product validation work</figcaption>
+            </figure>
+          </div>
+          <div class="carousel-dots" aria-label="LooxidLabs photo slider position"></div>
+        </template>
       </section>
 
     </main>
@@ -363,6 +422,7 @@
         katusa: ["KATUSA Service", "56M, 8A 2ID DSB UMT"],
         "double-major": ["Double Major", "UT Austin CS & ECE"],
         cultures: ["Korea and America", "Two cultures"],
+        looxidlabs: ["LooxidLabs Internship", "Project Intern · Product Analytics"],
       };
       const experienceDialog = document.querySelector("#experience-dialog");
       const experienceTitle = document.querySelector("#experience-dialog-title");
@@ -395,7 +455,7 @@
           ...slides.map((_, index) => {
             const dot = document.createElement("button");
             dot.type = "button";
-            dot.setAttribute("aria-label", "Show KATUSA photo " + (index + 1));
+            dot.setAttribute("aria-label", "Show photo " + (index + 1));
             dot.addEventListener("click", () => {
               showSlide(index);
               pauseThenResume();

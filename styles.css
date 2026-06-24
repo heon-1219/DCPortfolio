@@ -536,6 +536,13 @@ h3 {
   object-fit: cover;
 }
 
+/* Tall, portrait-oriented photos (e.g. event banners) are shown in full
+   rather than cropped to the landscape frame. */
+.service-gallery img.portrait-fit {
+  object-fit: contain;
+  background: #f7f7f7;
+}
+
 .service-gallery figcaption {
   padding: 0.5em 0.7em;
   color: #777777;
