@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>Coding Interview Prep / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; Coding Interview Prep</p>
+      <h1 class="project-page-title">Coding Interview Prep</h1>
+      <p class="project-subtitle">53-day technical interview tracker</p>
+      <p class="available-line">
+        Available at:
+        <a href="https://coding-interview-prep-two.vercel.app/" target="_blank" rel="noreferrer">coding-interview-prep-two.vercel.app</a>
+      </p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> Students preparing for technical interviews usually juggle
+            a scattered mix of spreadsheets, NeetCode tabs, random docs of notes, and half-finished
+            practice problems. There is no single place that combines a structured study plan with
+            their own progress, their multiple attempted solutions per problem, and their notes,
+            and none of it follows them across devices. Reviewing what they actually learned is
+            even harder, because those notes never get consolidated.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I built <em>Coding Interview Prep</em>, a study platform
+            that wraps a 53-day curriculum &mdash; DSA fundamentals, all of NeetCode 250, and
+            company-specific sets for Google, Meta, Amazon, Microsoft, Nvidia, and Databricks &mdash; around
+            each student's personal progress. Users sign in with Google, and their progress, notes,
+            and saved solutions sync to the cloud per account with 30-day sessions. Each problem
+            supports multiple saved solutions in NeetCode-style tabs, and an AI feature consolidates
+            a student's own notes into an audio review using their own Gemini key. It ships as a
+            single Next.js app on Vercel.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        Coding Interview Prep is a full-stack Next.js app for students working through a technical
+        interview roadmap. The tracker lays out a 53-day plan and lets a signed-in student check
+        off problems, keep per-problem notes, and store several solution attempts per problem.
+        Because everything is keyed to a Google account and synced to a serverless database, a
+        student can start on a laptop and continue on their phone without losing state. The
+        interface defaults to English with a Korean toggle and is designed to work well on mobile.
+      </p>
+      <p>
+        The app is deliberately lightweight: one Next.js deployment serves both the UI and the
+        API routes, authentication is handled by NextAuth with Google OAuth, and per-user data
+        lives in Upstash Redis. The optional AI review runs server-side with a key the student
+        supplies themselves, so no shared API cost or exposed secrets are involved.
+      </p>
+
+      <h2>System Architecture</h2>
+      <p>
+        The system is one Next.js deployment: the App Router client and the serverless API routes
+        ship together on Vercel. NextAuth handles the Google OAuth flow, Upstash Redis stores each
+        user's state, and Google's Gemini API generates the AI review &mdash; both reached only
+        from the server so keys never touch the browser.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>System Architecture</h3>
+        <svg viewBox="0 0 800 320" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-cip" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow-cip" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <!-- Google OAuth (top) -->
+          <rect x="290" y="15" width="220" height="68" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2" filter="url(#shadow-cip)" />
+          <text x="400" y="43" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#1e3a8a" text-anchor="middle">Google OAuth</text>
+          <text x="400" y="63" font-family="Helvetica, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle">Sign-in, 30-day sessions</text>
+
+          <!-- Next.js client -->
+          <rect x="40" y="150" width="205" height="105" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow-cip)" />
+          <text x="142" y="183" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#083344" text-anchor="middle">Next.js 14 Client</text>
+          <text x="142" y="204" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">App Router UI, tracker,</text>
+          <text x="142" y="219" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">solution tabs, EN / KO</text>
+
+          <!-- Next.js API routes -->
+          <rect x="305" y="150" width="205" height="105" rx="8" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow-cip)" />
+          <text x="407" y="183" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#3b0764" text-anchor="middle">API Routes (Serverless)</text>
+          <text x="407" y="204" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">NextAuth, data sync,</text>
+          <text x="407" y="219" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">settings, summarize</text>
+
+          <!-- Gemini API (top right) -->
+          <rect x="600" y="120" width="180" height="80" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2" filter="url(#shadow-cip)" />
+          <text x="690" y="152" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#451a03" text-anchor="middle">Gemini API</text>
+          <text x="690" y="172" font-family="Helvetica, sans-serif" font-size="11" fill="#b45309" text-anchor="middle">AI audio review from</text>
+          <text x="690" y="187" font-family="Helvetica, sans-serif" font-size="11" fill="#b45309" text-anchor="middle">notes (user's own key)</text>
+
+          <!-- Upstash Redis (bottom right) -->
+          <rect x="600" y="215" width="180" height="80" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-cip)" />
+          <text x="690" y="247" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#052e16" text-anchor="middle">Upstash Redis</text>
+          <text x="690" y="267" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Per-user progress,</text>
+          <text x="690" y="282" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">notes, solutions</text>
+
+          <!-- Client <-> API -->
+          <path d="M 245 185 L 305 185" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-cip)" />
+          <path d="M 305 220 L 245 220" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-cip)" />
+          <text x="275" y="177" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">HTTP / JSON</text>
+          <text x="275" y="233" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">State</text>
+
+          <!-- API <-> Google OAuth -->
+          <path d="M 400 150 L 400 83" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-cip)" marker-start="url(#arrow-cip)" />
+          <text x="452" y="118" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">OAuth flow</text>
+
+          <!-- API <-> Gemini -->
+          <path d="M 510 175 L 600 160" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-cip)" />
+          <text x="558" y="158" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Summarize</text>
+
+          <!-- API <-> Redis -->
+          <path d="M 510 230 L 600 250" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-cip)" />
+          <path d="M 600 265 L 510 245" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-cip)" />
+          <text x="558" y="270" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Read / write</text>
+        </svg>
+      </div>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>A Next.js 14 (App Router) app that serves both the study UI and its serverless API routes from one Vercel deployment.</li>
+        <li>Google sign-in via NextAuth v4 with 30-day persistent sessions, so a student's data is tied to their account.</li>
+        <li>A 53-day curriculum covering DSA fundamentals, all of NeetCode 250, and company-specific sets (Google, Meta, Amazon, Microsoft, Nvidia, Databricks, and more).</li>
+        <li>Daily spaced review with per-problem difficulty marks (Easy / OK / Hard), where problems marked Hard auto-collect into a review queue.</li>
+        <li>Per-user cloud sync of progress, notes, and solutions in Upstash Redis, so state follows the student across devices.</li>
+        <li>Multiple saved solutions per problem in NeetCode-style tabs, plus per-problem notes.</li>
+        <li>An AI audio review that consolidates a student's own notes, generated server-side with the student's own Gemini key.</li>
+        <li>English/Korean language toggle and a mobile-responsive layout.</li>
+      </ul>
+
+      <h2>Study Workflow</h2>
+      <p>
+        A student signs in with Google and lands on the tracker, which lays out the 53-day plan.
+        As they work through problems they check off progress, jot per-problem notes, and save one
+        or more solution attempts per problem in tabs &mdash; useful for keeping both a brute-force
+        and an optimized approach side by side. Every change is written back to their account, so
+        the same board is waiting for them when they reopen the app on another device. Because
+        writes are last-write-wins across simultaneous devices, the model stays simple and
+        predictable for a single student studying.
+      </p>
+
+      <div class="figure-grid" style="margin-bottom: 2em;">
+        <figure class="media-card tall" style="margin: 0;">
+          <img src="../../assets/cip-login-ui.jpg" alt="Coding Interview Prep sign-in gate with Continue with Google" loading="lazy" />
+          <figcaption style="padding: 0.85em 1em;">
+            <strong>Sign-In &amp; Plan Overview:</strong> Students "Continue with Google" (NextAuth
+            OAuth, 30-day sessions). Before sign-in the gate lays out the plan &mdash; DSA
+            fundamentals, all of NeetCode 250, and company-specific prep &mdash; and the core
+            features: progress and difficulty marks, day notes and per-problem memos, multiple
+            saved solutions, and AI-consolidated audio review with your own Gemini key.
+          </figcaption>
+        </figure>
+        <figure class="media-card tall" style="margin: 0;">
+          <img src="../../assets/cip-progress-ui.jpg" alt="Coding Interview Prep onboarding, progress, and phased curriculum" loading="lazy" />
+          <figcaption style="padding: 0.85em 1em;">
+            <strong>Curriculum &amp; Progress:</strong> After onboarding (start date, felt-difficulty
+            marks: Easy / OK / Hard&nbsp;&rarr;&nbsp;review queue), the tracker shows overall
+            progress ("6 / 292 items, 2% done"), an "Already done" pre-check for problems you've
+            solved, and the phased day-by-day plan (Phase&nbsp;1 &middot; DSA Fundamentals &middot;
+            Day 01).
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>Daily Study, Solutions &amp; Review</h2>
+      <p>
+        Each day surfaces a concrete checklist of concepts and problems, and each problem opens into
+        a solutions view with NeetCode-style tabs (<code>&lt;/&gt;</code>), where a student can keep
+        several saved attempts alongside per-problem notes. Problems marked Hard flow into a spaced
+        review queue that resurfaces them later to re-solve from memory. When a student wants to
+        study back what they have learned, the AI review consolidates their notes into an audio
+        walkthrough; the Gemini key is entered once in settings and stored server-side, so the
+        summary is generated on the server and the key is never exposed to the browser.
+      </p>
+
+      <div class="figure-grid" style="margin-bottom: 2em;">
+        <figure class="media-card tall" style="margin: 0;">
+          <img src="../../assets/cip-daily-ui.jpg" alt="Coding Interview Prep daily study checklist with per-problem solution tabs" loading="lazy" />
+          <figcaption style="padding: 0.85em 1em;">
+            <strong>Daily Study Checklist:</strong> Each day (e.g. "Day 2 &middot; Sorting") lists
+            concrete tasks &mdash; compare sorts, implement merge sort from scratch, solve with your
+            own approach &mdash; each with per-problem solution tabs (<code>&lt;/&gt;</code>) and a
+            note attachment.
+          </figcaption>
+        </figure>
+        <figure class="media-card tall" style="margin: 0;">
+          <img src="../../assets/cip-tracker-ui.jpg" alt="Coding Interview Prep spaced review card and saved solutions" loading="lazy" />
+          <figcaption style="padding: 0.85em 1em;">
+            <strong>Spaced Review &amp; Saved Solutions:</strong> A spaced-review card resurfaces
+            past problems ("Re-solve from memory") with a "Review material" tab. Each problem keeps
+            multiple saved solutions (e.g. "Fibonacci Number &middot; 6 solutions") and notes, all
+            synced to the signed-in account.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>Implementation</h2>
+      <p>
+        Authentication is handled by NextAuth v4 configured for Google OAuth. Signing in issues a
+        session that persists for 30 days, and every API route reads that session to scope data to
+        the current user. The serverless API routes cover four concerns: <code>auth</code>
+        (NextAuth), <code>data</code> (reading and writing the user's tracker state),
+        <code>settings</code> (storing the Gemini key server-side), and <code>summarize</code>
+        (calling Gemini to build the audio review). Because it is all one Next.js app, the client
+        and these routes deploy together and share the same origin.
+      </p>
+      <p>
+        Per-user state lives in Upstash Redis, a serverless key-value store, keyed by account.
+        Each user's document holds progress, notes, and saved solutions, budgeted at roughly
+        900&nbsp;KB &mdash; enough for hundreds of solutions. Concurrent edits from multiple
+        devices resolve last-write-wins, and a reset option clears progress while keeping the
+        account intact. Keeping secrets and AI calls on the server keeps the browser bundle free
+        of any credentials.
+      </p>
+
+      <div class="meta-list">
+        <div class="box">
+          <div class="dense">
+            <h3>Frontend</h3>
+            Next.js 14 (App Router)
+          </div>
+          <p class="small">React UI for the tracker, solution tabs, notes, settings, and AI review, with EN/KO toggle and mobile layout.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Backend</h3>
+            NextAuth + Upstash Redis
+          </div>
+          <p class="small">Google OAuth sessions, serverless API routes, per-user cloud sync, and server-side Gemini calls.</p>
+        </div>
+      </div>
+
+      <h2>Deployment</h2>
+      <p>
+        The app deploys to Vercel straight from GitHub. Setup wires in Google OAuth credentials
+        (client ID and secret), an Upstash Redis connection, and NextAuth environment variables;
+        each student later supplies their own Gemini key through the in-app settings. Because both
+        the frontend and the API run as one Vercel project on free-tier services, the platform
+        stays essentially cost-free to host.
+      </p>
+
+      <h2>Stack</h2>
+      <p>
+        Next.js 14, React, JavaScript, NextAuth v4, Google OAuth, Upstash Redis, Google Gemini API,
+        Vercel.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>

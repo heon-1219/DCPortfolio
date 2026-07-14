@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>2ID Jiu Jitsu Club / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; 2ID Jiu Jitsu Club</p>
+      <h1 class="project-page-title">2ID Jiu Jitsu Club</h1>
+      <p class="project-subtitle">Training scheduler &amp; club administration</p>
+      <p class="available-line">
+        Available at:
+        <a href="https://2-id-jiu-jitsu-club.vercel.app/" target="_blank" rel="noreferrer">2-id-jiu-jitsu-club.vercel.app</a>
+      </p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> Our KATUSA Brazilian Jiu-Jitsu club at USAG Humphreys was
+            scheduling sessions and tracking who showed up over group chats and paper rosters.
+            Sign-ups were hard to cap, contact lists were scattered across messages, and there
+            was no reliable way to see attendance or total training hours over time. Because the
+            club mixes Korean soldiers, American soldiers, and Spanish-speaking members, plain
+            Korean or English announcements also left people out.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I built <em>2ID Jiu Jitsu Club</em>, a mobile-first
+            scheduling and administration site that is actively used to run the program. Members
+            sign up for a class in seconds with no account, and a strict twenty-person cap is
+            enforced at the database level so a class can never be overbooked. Coaches get an
+            admin dashboard to create sessions, pull attendee contact lists, mark attendance,
+            and read training-hour analytics. Everything ships as a small, low-maintenance Vercel
+            deployment on a SolidJS + FastAPI + Neon Postgres stack, with the whole interface
+            available in English, Korean, and Spanish.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        2ID Jiu Jitsu Club is a full-stack web app for the USAG Humphreys 2ID KATUSA Jiu Jitsu
+        Club. It serves two audiences from one deployment: members, who browse the upcoming
+        schedule and reserve a spot without logging in, and coaches, who manage sessions and
+        attendance behind a password-protected admin panel. The public side also carries the
+        gym location, conduct standards, and contact info, each presented in English, Korean,
+        and Spanish.
+      </p>
+      <p>
+        The app is in active use to schedule sessions and take care of trainees. It is built
+        deliberately small: a single Vercel deployment bundles the SolidJS frontend and the
+        FastAPI backend, and a serverless Neon Postgres database keeps hosting essentially
+        free while still enforcing real transactional guarantees.
+      </p>
+
+      <h2>System Architecture</h2>
+      <p>
+        The system is designed around one bundled Vercel deployment: a static SolidJS single-page
+        app talks to a FastAPI serverless function, which owns all business rules and is the only
+        thing that touches the database. Serverless Neon Postgres provides transactional storage.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>System Architecture</h3>
+        <svg viewBox="0 0 800 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-bjj" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow-bjj" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <!-- Single Vercel deployment wrapper -->
+          <rect x="20" y="70" width="510" height="170" rx="12" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 5" />
+          <text x="40" y="92" font-family="Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#64748b">Single Vercel Deployment (static SPA + serverless API)</text>
+
+          <!-- SolidJS client -->
+          <rect x="45" y="110" width="200" height="105" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow-bjj)" />
+          <text x="145" y="142" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#083344" text-anchor="middle">SolidJS + Vite SPA</text>
+          <text x="145" y="163" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">Session sign-up, Admin panel,</text>
+          <text x="145" y="178" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">i18n (EN / KO / ES), TypeScript</text>
+
+          <!-- FastAPI backend -->
+          <rect x="305" y="110" width="205" height="105" rx="8" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow-bjj)" />
+          <text x="407" y="142" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#3b0764" text-anchor="middle">FastAPI Function</text>
+          <text x="407" y="163" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">REST API, JWT admin auth,</text>
+          <text x="407" y="178" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">capacity transaction, analytics</text>
+
+          <!-- Neon Postgres -->
+          <rect x="600" y="115" width="175" height="95" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-bjj)" />
+          <text x="687" y="150" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#052e16" text-anchor="middle">Neon Postgres</text>
+          <text x="687" y="171" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Serverless PostgreSQL,</text>
+          <text x="687" y="186" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">sessions + signups tables</text>
+
+          <!-- Client <-> FastAPI -->
+          <path d="M 245 145 L 305 145" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-bjj)" />
+          <path d="M 305 180 L 245 180" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-bjj)" />
+          <text x="275" y="137" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">HTTP / JSON</text>
+          <text x="275" y="193" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Sessions</text>
+
+          <!-- FastAPI <-> Neon -->
+          <path d="M 510 150 L 600 150" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-bjj)" />
+          <path d="M 600 175 L 510 175" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-bjj)" />
+          <text x="555" y="142" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">SQL (FOR UPDATE)</text>
+          <text x="555" y="190" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Rows</text>
+        </svg>
+      </div>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>A SolidJS + TypeScript + Vite single-page app with a public schedule, a no-account sign-up dialog, and a separate admin panel.</li>
+        <li>A FastAPI backend exposing public session/sign-up routes and JWT-protected admin routes, deployed as one Vercel serverless function alongside the static frontend.</li>
+        <li>A twenty-person, first-come first-served capacity limit enforced inside a Postgres transaction so concurrent sign-ups can never overbook a class.</li>
+        <li>Duplicate-sign-up protection using a normalized phone number that is unique per session.</li>
+        <li>An admin dashboard to create, edit, and delete sessions, view per-session attendee contact lists, and mark attendance.</li>
+        <li>Training analytics: attendance versus registration by member, plus completed training hours for the week, month, quarter, year, and all-time.</li>
+        <li>Full trilingual UI (English, Korean, Spanish) covering location, conduct standards, messaging, and contact info.</li>
+      </ul>
+
+      <h2>Member Workflow</h2>
+      <p>
+        A member opens the site on their phone, reads the club rules and location in their own
+        language, and taps a class on the schedule. A sign-up dialog asks only for a name and
+        phone number, so there is no account to create or password to remember. The backend
+        opens a transaction, locks that session row, counts existing sign-ups, and either
+        confirms the spot or returns a "class full" response the instant the twentieth seat is
+        taken. If the same phone number is already registered for that class, the request is
+        rejected instead of creating a duplicate.
+      </p>
+
+      <figure class="media-card tall">
+        <img src="../../assets/2id-bjj-public-ui.jpg" alt="2ID Jiu Jitsu Club public schedule and sign-up screen" loading="lazy" />
+        <figcaption style="padding: 0.85em 1em;">
+          <strong>Public Schedule &amp; Sign-Up:</strong> The member-facing surface, with the
+          EN/KO/ES language toggle at the top. Upcoming sessions are listed with their remaining
+          capacity ("19 places left"), and a lightweight name-and-phone flow reserves one of the
+          20 first-come, first-served seats without any login. The training location is shown
+          below the schedule.
+        </figcaption>
+      </figure>
+
+      <h2>Coach Workflow</h2>
+      <p>
+        A coach signs in through the admin login to receive a short-lived JWT, then works from the
+        admin dashboard. From there they create sessions with a title, start and end time, and
+        notes; edit or delete them; and open any session to see the full roster with contact
+        details for reaching members directly. During or after class they mark who attended, and
+        the stats view rolls that data up into attendance-versus-registration figures per member
+        and total completed training hours across weekly, monthly, quarterly, yearly, and
+        all-time windows.
+      </p>
+
+      <figure class="media-card tall">
+        <img src="../../assets/2id-bjj-admin-ui.jpg" alt="2ID Jiu Jitsu Club admin dashboard with session editor, attendance, and analytics" loading="lazy" />
+        <figcaption style="padding: 0.85em 1em;">
+          <strong>Admin Dashboard:</strong> Behind JWT-authenticated login, coaches edit a
+          session's start, end, and notes and save it, then manage each session inline
+          ("1/20 attendees", Edit session / Attendees / Delete). The same view rolls the data up
+          into <em>Training Hours Held</em> across week, month, quarter, year, and all-time, plus
+          <em>Member Attendance</em> showing attended-versus-registered per member.
+        </figcaption>
+      </figure>
+
+      <h2>Implementation</h2>
+      <p>
+        The backend is a single FastAPI application that owns every business rule; the SolidJS
+        client only renders state and calls the API. Public routes list sessions and accept
+        sign-ups, while admin routes for creating sessions, reading rosters, and marking
+        attendance sit behind a <code>require_admin</code> dependency that validates the JWT
+        issued at login. Data lives in two tables: <code>sessions</code> (title, start/end
+        times, notes, with a check that the end is after the start) and <code>signups</code>
+        (name, phone, a normalized phone for de-duplication, an attended flag, and a foreign key
+        that cascades on session delete).
+      </p>
+      <p>
+        The capacity rule is the core correctness guarantee. Rather than counting sign-ups in
+        application code and hoping two requests do not race, the sign-up path runs inside a
+        Postgres transaction: it takes a row lock on the target session with
+        <code>SELECT ... FOR UPDATE</code>, counts current sign-ups, and only inserts if the
+        count is below twenty &mdash; otherwise it raises a "session full" error that the API
+        returns as a 409. Because the lock serializes concurrent sign-ups for the same class,
+        the twenty-seat cap holds even under a rush of simultaneous requests. Analytics are
+        computed from completed sessions by summing each session's duration in hours and
+        bucketing it into the current week, month, quarter, year, and all-time totals.
+      </p>
+
+      <div class="meta-list">
+        <div class="box">
+          <div class="dense">
+            <h3>Frontend</h3>
+            SolidJS + Vite
+          </div>
+          <p class="small">TypeScript SPA with public schedule, no-account sign-up dialog, admin panel, and EN/KO/ES i18n.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Backend</h3>
+            FastAPI + Neon Postgres
+          </div>
+          <p class="small">JWT admin auth, transactional capacity limit, attendance tracking, and training-hour analytics.</p>
+        </div>
+      </div>
+
+      <h2>Deployment</h2>
+      <p>
+        The whole project ships as one Vercel deployment: the SolidJS build is served as static
+        assets, and the FastAPI app runs as a serverless function handling every
+        <code>/api</code> route. It is wired to a serverless Neon Postgres database provisioned
+        through the Vercel marketplace, with the connection string, admin credentials, and JWT
+        secret supplied as environment variables. Python <code>pytest</code>, the frontend test
+        suite, and a production build run before deploy to keep the small footprint reliable.
+      </p>
+
+      <h2>Stack</h2>
+      <p>
+        SolidJS, TypeScript, Vite, FastAPI, Python, PostgreSQL, Neon, JWT, Vercel (serverless
+        functions), pytest.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>
