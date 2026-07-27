@@ -164,3 +164,36 @@ logout.
 
 Live Gemini calls are **not** covered: they need the user's AI Studio key,
 which is entered through the UI at runtime.
+
+---
+
+## 2026-07-27 — Deployed and verified in production
+
+Commit `de3ccdf` pushed to `master`; Vercel auto-deployed.
+
+**Vercel picked up the Python function without extra config.** `api/index.py`
+matches a recognised entrypoint name and exports a top-level `app`, which is
+what the runtime looks for. `requirements.txt` at the project root supplied the
+dependencies. The routes 404'd for a few minutes purely as deploy lag, not a
+routing fault.
+
+**Live verification against https://www.davidseheonchang.xyz:**
+
+- Portfolio unaffected — `/` and `/projects/tessera/` both 200
+- `/api/health` reports all four env vars present (user had set them)
+- `/s` unauthenticated shows the passcode prompt and contains **no** calendar
+  markup — the gate holds in production, not just in tests
+- `X-Robots-Tag: noindex, nofollow, noarchive` present
+- Wrong passcode → 401 "Incorrect. 2 tries left."
+- Correct passcode → 303, session cookie issued, `/s` then serves the calendar
+  and the Gemini chat
+- `/spublic` availability finder works unauthenticated and returned a real slot
+- Access control confirmed live: the `/sprivate` passcode reads details (200)
+  but is refused for event creation (401) and for Gemini (401); anonymous
+  callers cannot read details (401)
+
+**Outstanding:** the Telegram chat must be opened from the user's side — a bot
+cannot initiate. Until `/start` is sent to @heonschedulebot, delivery fails
+with "chat not found" and reminders stay queued for retry (verified: the loop
+retried rather than dropping). Live Gemini calls remain untested until an AI
+Studio key is entered in `/s`.
