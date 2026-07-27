@@ -1,9 +1,0 @@
-# Secrets — never commit. Real values live in Vercel env vars.
-.env
-.env.*
-!.env.example
-
-__pycache__/
-*.pyc
-venv/
-.vercel
