@@ -587,15 +587,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const r = await fetch("/api/settings/models/probe", { credentials: "same-origin" });
     const d = await r.json();
     if (!r.ok) { say(d.detail || "Probe failed.", "sys"); return; }
+    const LABEL = { ok: "usable", blocked: "quota blocked", unavailable: "not available" };
     const lines = [];
     Object.entries(d.results).forEach(([m, state]) => {
-      lines.push((state === "ok" ? "OK      " : "blocked ") + m);
+      lines.push(m.replace("gemini-", "") + " - " + (LABEL[state] || state));
       const opt = Array.from(sel.options).find(o => o.value === m);
       if (opt) {
         opt.disabled = state !== "ok";
-        opt.textContent = m.replace("gemini-", "") + (state === "ok" ? "" : " (blocked)");
+        opt.textContent = m.replace("gemini-", "") +
+          (state === "ok" ? "" : " (" + (LABEL[state] || state) + ")");
       }
     });
+    if (!Object.values(d.results).some(v => v === "ok"))
+      lines.push("No model is usable on this key right now.");
     say(lines.join("\n"), "sys");
   };
 

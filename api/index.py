@@ -315,7 +315,10 @@ def probe_models(request: Request):
         key = gemini.get_key(conn)
         if not key:
             raise HTTPException(status_code=428, detail="No Gemini API key saved yet.")
-        return {"results": gemini.probe_models(key), "current": gemini.get_model(conn)}
+        try:
+            return {"results": gemini.probe_models(key), "current": gemini.get_model(conn)}
+        except gemini.InvalidKey as exc:
+            raise HTTPException(status_code=428, detail=str(exc))
     finally:
         conn.close()
 
@@ -342,6 +345,15 @@ def set_gemini_key(request: Request, payload: dict = Body(...)):
         raise HTTPException(status_code=400, detail="Key required.")
     conn = _conn()
     try:
+        # Verify before storing. A bad paste previously sat in the database
+        # and surfaced later as every model looking quota-blocked, which is a
+        # deeply misleading way to learn the key was wrong.
+        try:
+            gemini.validate_key(key)
+        except gemini.InvalidKey as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        except gemini.GeminiError as exc:
+            raise HTTPException(status_code=502, detail=str(exc))
         gemini.save_key(conn, key)
         return {"ok": True}
     finally:

@@ -9,6 +9,7 @@ foundation for deleting someone's calendar entries.
 """
 
 import json
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
@@ -285,6 +286,34 @@ def _post(url: str, payload: dict) -> dict:
         raise GeminiError(f"Could not reach Gemini: {exc.reason}") from exc
 
 
+def validate_key(key: str) -> None:
+    """Check a key before storing it, so a bad paste fails loudly and at once.
+
+    Uses ListModels rather than generateContent: it proves the credential works
+    without consuming any generation quota, so validating can never itself
+    cause a rate-limit error.
+    """
+    url = f"{API_ROOT.rsplit('/', 1)[0]}/models?key={key}"
+    request = urllib.request.Request(url, method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")
+        if exc.code in (400, 401, 403):
+            hint = ""
+            if not key.startswith("AIza"):
+                hint = (
+                    " That does not look like an AI Studio API key — they begin "
+                    "with 'AIza'. Check you copied the key itself and not an "
+                    "OAuth client secret or project ID."
+                )
+            raise InvalidKey(f"Google rejected this key.{hint}") from exc
+        raise GeminiError(f"Could not verify key (HTTP {exc.code}): {body[:150]}") from exc
+    except urllib.error.URLError as exc:
+        raise GeminiError(f"Could not reach Gemini: {exc.reason}") from exc
+
+
 def probe_models(key: str) -> dict:
     """Ask the key itself which models it can call.
 
@@ -297,8 +326,16 @@ def probe_models(key: str) -> dict:
         "contents": [{"role": "user", "parts": [{"text": "hi"}]}],
         "generationConfig": {"maxOutputTokens": 1},
     }
+    # Verify the credential first. Without this, a bad key makes every model
+    # look quota-blocked, which points the user at the wrong problem entirely.
+    validate_key(key)
+
     results = {}
-    for model in MODEL_CHOICES:
+    for index, model in enumerate(MODEL_CHOICES):
+        if index:
+            # Pace the calls: firing the whole list back-to-back can trip the
+            # per-minute limit and mislabel a working model as blocked.
+            time.sleep(1.5)
         try:
             _post(f"{API_ROOT}/{model}:generateContent?key={key}", payload)
             results[model] = "ok"

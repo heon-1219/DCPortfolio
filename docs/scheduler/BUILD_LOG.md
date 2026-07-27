@@ -235,3 +235,42 @@ Changes:
   tool-calling exchange against a model that cannot answer.
 
 100 tests passing; `test_gemini_tools.py` confirmed it restores the live key.
+
+---
+
+## 2026-07-27 — "Everything blocked" was an invalid key, not quota
+
+User reported every model showing blocked, and asked whether the API key had
+been stolen. It had not. The stored credential was simply not an AI Studio API
+key:
+
+- length 53, does not start with `AIza` (real keys are 39 chars, `AIza...`)
+- `ListModels` returns **401 UNAUTHENTICATED**, "Expected OAuth 2 access token,
+  login cookie or other valid authentication credential" — not 429
+
+A stolen key would show *usage*, not a rejected credential. The likely cause is
+a mis-paste when re-entering the key after the earlier test run destroyed it.
+
+Two defects of mine turned that into a confusing hunt:
+
+1. **No validation on save.** `save_key` stored whatever it was given, so a bad
+   paste sat in the database and only surfaced later, indirectly.
+2. **The probe UI labelled every non-`ok` state "blocked".** `probe_models`
+   already distinguished `unavailable` (key/model problem) from `blocked`
+   (quota), but the frontend flattened both to "blocked" — pointing the user at
+   quota and, understandably, at theft.
+
+Fixes:
+- `validate_key()` verifies a key via **ListModels**, which proves the
+  credential without consuming generation quota, so validating can never itself
+  cause a rate-limit error. Called on save: a bad key is now rejected
+  immediately with a hint about the `AIza` prefix and OAuth secrets.
+- `probe_models()` validates first and raises `InvalidKey`, so a bad key no
+  longer masquerades as four quota-blocked models. The endpoint returns 428.
+- The probe UI now shows distinct labels: `usable`, `quota blocked`,
+  `not available`, plus an explicit "no model is usable" line.
+- `probe_models()` now paces its calls 1.5s apart. Firing all four back-to-back
+  could trip the per-minute limit and mislabel a working model as blocked —
+  the probe could have manufactured the very symptom it was diagnosing.
+
+100 tests passing.
