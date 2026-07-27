@@ -345,7 +345,7 @@ FINDER_HTML = """
       <option value="afternoon">Afternoon</option>
       <option value="evening">Evening</option>
     </select>
-    <button class="primary" id="f-go">Find</button>
+    <button class="primary" id="f-go" type="button">Find</button>
   </div>
   <div class="result" id="f-result">Find the closest opening.</div>
 </div>
@@ -388,9 +388,9 @@ EDIT_DIALOG = """
   <label for="e-notes">Notes</label>
   <textarea id="e-notes"></textarea>
   <div class="actions">
-    <button id="e-save" class="primary">Save</button>
-    <button id="e-del" class="danger">Delete</button>
-    <button id="e-cancel">Close</button>
+    <button id="e-save" class="primary" type="button">Save</button>
+    <button id="e-del" class="danger" type="button">Delete</button>
+    <button id="e-cancel" type="button">Close</button>
   </div>
 </dialog>
 """
@@ -460,19 +460,19 @@ document.addEventListener("DOMContentLoaded", () => {
 """
 
 CHAT_HTML = """
-<button class="fab" id="fab">Ask Gemini</button>
+<button class="fab" id="fab" type="button">Ask Gemini</button>
 <section class="chat" id="chat">
   <div class="chat-head">
     <strong>Gemini</strong>
     <select id="model-sel" title="Model — switch if you hit a quota limit"></select>
-    <button id="probe-btn" title="Test which models your key can actually use">Check</button>
-    <button id="key-btn">API key</button>
-    <button id="chat-close">Close</button>
+    <button id="probe-btn" title="Test which models your key can actually use" type="button">Check</button>
+    <button id="key-btn" type="button">API key</button>
+    <button id="chat-close" type="button">Close</button>
   </div>
   <div class="log" id="log"></div>
   <div class="chat-in">
     <input id="chat-input" placeholder="e.g. dentist Friday 3pm, critical" autocomplete="off">
-    <button class="primary" id="send">Send</button>
+    <button class="primary" id="send" type="button">Send</button>
   </div>
 </section>
 
@@ -485,8 +485,8 @@ CHAT_HTML = """
   <label for="k-val">Key</label>
   <input id="k-val" type="password" placeholder="AIza...">
   <div class="actions">
-    <button class="primary" id="k-save">Save</button>
-    <button id="k-cancel">Cancel</button>
+    <button class="primary" id="k-save" type="button">Save</button>
+    <button id="k-cancel" type="button">Cancel</button>
   </div>
 </dialog>
 """
@@ -624,13 +624,13 @@ def _shell(title: str, header_extra: str, body: str, scripts: str, mode: str) ->
         + '<header><div class="bar">'
         + f'<span class="title">{title}</span>'
         + '<div class="views">'
-        '<button data-view="month">Month</button>'
-        '<button data-view="week">Week</button>'
-        '<button data-view="day">Day</button>'
+        '<button data-view="month" type="button">Month</button>'
+        '<button data-view="week" type="button">Week</button>'
+        '<button data-view="day" type="button">Day</button>'
         "</div>"
-        '<button id="prev">&lsaquo;</button>'
-        '<button id="today">Today</button>'
-        '<button id="next">&rsaquo;</button>'
+        '<button id="prev" type="button">&lsaquo;</button>'
+        '<button id="today" type="button">Today</button>'
+        '<button id="next" type="button">&rsaquo;</button>'
         + header_extra
         + '</div><div class="range" id="range"></div>'
         + LEGEND
@@ -648,7 +648,7 @@ def scheduler_page() -> str:
     """/s — full manager: calendar, manual editing, and Gemini CRUD."""
     return _shell(
         "Schedule",
-        '<button class="primary" id="add">+ Add</button>',
+        '<button class="primary" id="add" type="button">+ Add</button>',
         EDIT_DIALOG + CHAT_HTML,
         EDIT_JS + CHAT_JS,
         "full",

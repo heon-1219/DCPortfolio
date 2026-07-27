@@ -64,6 +64,7 @@ def login_page(scope: str, target: str, error: str = "") -> str:
     {error_html}
     <form method="post" action="/api/login">
       <input type="hidden" name="scope" value="{html.escape(scope)}">
+      <input type="hidden" name="next" value="{html.escape(target)}">
       <label for="password">Passcode</label>
       <input id="password" name="password" type="password"
              inputmode="numeric" autocomplete="current-password"

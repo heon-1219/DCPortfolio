@@ -274,3 +274,50 @@ Fixes:
   the probe could have manufactured the very symptom it was diagnosing.
 
 100 tests passing.
+
+---
+
+## 2026-07-27 — Routing: signing in on /s could land on /sprivate
+
+User reported that creating a schedule on `/s` "exits to `/sprivate`".
+
+Investigation ruled out the obvious suspects: `/s` contains no `<form>`, no
+`location`/`href` assignment, and no reference to `/sprivate` at all; the live
+`POST /api/events` completes with **0 redirects**; and 10 consecutive fetches
+of `/s` all returned the `/s` page. So nothing was actively navigating.
+
+The mechanism was indirect. The post-login destination was derived **solely
+from a hidden `scope` field inside the served HTML**, and Vercel was labelling
+those responses:
+
+    cache-control: public, max-age=0, must-revalidate
+
+`public` on an authenticated page means a browser or shared cache may store
+and replay it. A replayed `/sprivate` login page carries
+`scope=sprivate`, so submitting it redirects to `/sprivate` — exactly the
+reported symptom, and it appears right after a session lapse, which is when a
+login form reappears mid-session.
+
+Fixes:
+- `Cache-Control: private, no-store, max-age=0, must-revalidate` on every
+  scheduler response. Authenticated HTML should never have been publicly
+  cacheable; that is a privacy problem independent of this bug.
+- The login form now carries a `next` field, and the server honours it **only**
+  when it is one of the two known pages *and* consistent with the scope being
+  unlocked. Otherwise it falls back to the scope mapping. A stale, tampered, or
+  external `next` cannot divert the user.
+- Every `<button>` is now explicitly `type="button"`. All 18 previously relied
+  on the default, which is `type="submit"` — harmless only while no form
+  exists, and a stray navigation the moment one is added.
+
+New suite `tests/test_scheduler_routing.py` (16 checks) pins all of it:
+sign-in on `/s` lands on `/s` even when `next` says otherwise or points
+off-site, `no-store` is present, `public` is absent, and no page carries an
+untyped button or a link to another scheduler page.
+
+**Caveat:** this was diagnosed by inspection, not reproduced. A headless
+browser could not be installed (no sudo for `libatk`), so the exact trigger on
+the user's device is unconfirmed — the caching path is the mechanism that fits
+the evidence.
+
+116 tests passing.

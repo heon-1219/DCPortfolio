@@ -23,7 +23,14 @@ import _ui as ui  # noqa: E402
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
-NOINDEX = {"X-Robots-Tag": "noindex, nofollow, noarchive"}
+NOINDEX = {
+    "X-Robots-Tag": "noindex, nofollow, noarchive",
+    # Authenticated pages must never be stored by a browser or CDN. Vercel
+    # otherwise labels these responses `public`, which allowed a stale login
+    # page — carrying the wrong hidden scope — to be replayed and send the
+    # user to the other page after signing in.
+    "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+}
 
 
 @app.middleware("http")
@@ -115,12 +122,27 @@ def spublic_page():
 # --- login ---------------------------------------------------------------
 
 
+# Only these may ever be a post-login destination. Anything else is ignored,
+# so a stale or tampered form cannot redirect the user somewhere unexpected.
+LOGIN_TARGETS = {"s": "/s", "sprivate": "/sprivate"}
+
+
 @app.post("/api/login")
-def login(request: Request, scope: str = Form(...), password: str = Form(...)):
+def login(
+    request: Request,
+    scope: str = Form(...),
+    password: str = Form(...),
+    next: str = Form(""),
+):
     if scope not in auth.SCOPES:
         return HTMLResponse(pages.login_page("s", "/s", error="Unknown page."), status_code=400)
 
-    target = "/s" if scope == "s" else "/sprivate"
+    # Return the user to the page they were actually on. The scope mapping is
+    # the fallback; `next` is honoured only if it is one of the known pages and
+    # is consistent with the scope being unlocked.
+    target = LOGIN_TARGETS[scope]
+    if next in LOGIN_TARGETS.values() and next == LOGIN_TARGETS.get(scope):
+        target = next
     caller = auth.client_id(request)
 
     try:
@@ -161,7 +183,7 @@ def login(request: Request, scope: str = Form(...), password: str = Form(...)):
 
 @app.post("/api/logout")
 def logout(scope: str = Form("s")):
-    target = "/s" if scope == "s" else "/sprivate"
+    target = LOGIN_TARGETS.get(scope, "/s")
     response = RedirectResponse(target, status_code=303)
     response.delete_cookie(auth.cookie_name(scope), path="/")
     return response
