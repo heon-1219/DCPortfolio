@@ -15,6 +15,10 @@ def check(name, cond):
     if not cond: fails.append(name)
 
 conn = db.connect()
+# This suite runs against the LIVE database. Stash the real Gemini key and put
+# it back at the end — wiping app_settings would otherwise silently destroy it.
+_saved_key = g.get_key(conn)
+_saved_model = g.get_model(conn)
 with conn.cursor() as cur:
     cur.execute("DELETE FROM reminders"); cur.execute("DELETE FROM event_log")
     cur.execute("DELETE FROM events"); cur.execute("DELETE FROM app_settings")
@@ -90,7 +94,13 @@ check("prompt pins the timezone", "Asia/Seoul" in sp)
 with conn.cursor() as cur:
     cur.execute("DELETE FROM reminders"); cur.execute("DELETE FROM event_log")
     cur.execute("DELETE FROM events"); cur.execute("DELETE FROM app_settings")
-conn.commit(); conn.close()
+conn.commit()
+# Restore what we borrowed.
+if _saved_key:
+    g.save_key(conn, _saved_key)
+    g.set_model(conn, _saved_model)
+    check("real Gemini key restored after run", g.get_key(conn) == _saved_key)
+conn.close()
 
 print()
 print("FAILED: " + ", ".join(fails) if fails else "ALL CHECKS PASSED")

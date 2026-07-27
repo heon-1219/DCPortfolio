@@ -293,7 +293,25 @@ def get_settings(request: Request):
     conn = _conn()
     try:
         # Reports presence only. The key itself never leaves the server.
-        return {"gemini_key_set": bool(gemini.get_key(conn)), "model": gemini.get_model(conn)}
+        return {
+            "gemini_key_set": bool(gemini.get_key(conn)),
+            "model": gemini.get_model(conn),
+            "models": gemini.MODEL_CHOICES,
+        }
+    finally:
+        conn.close()
+
+
+@app.post("/api/settings/model")
+def set_model(request: Request, payload: dict = Body(...)):
+    _require_full(request)
+    model = (payload.get("model") or "").strip()
+    if model not in gemini.MODEL_CHOICES:
+        raise HTTPException(status_code=400, detail="Unknown model.")
+    conn = _conn()
+    try:
+        gemini.set_model(conn, model)
+        return {"ok": True, "model": model}
     finally:
         conn.close()
 
@@ -324,6 +342,17 @@ def gemini_chat(request: Request, payload: dict = Body(...)):
             # 428 tells the UI to prompt for a key rather than show an error.
             raise HTTPException(status_code=428, detail="No Gemini API key saved yet.")
         return gemini.chat(conn, message, payload.get("history") or [])
+    except gemini.QuotaExceeded:
+        # The key is valid — do NOT clear it. This is a free-tier limit.
+        model = gemini.get_model(conn)
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Free-tier quota hit on {model}. Daily quotas reset at midnight "
+                "Pacific. Wait a minute for the per-minute limit, or pick another "
+                "model above."
+            ),
+        )
     except gemini.InvalidKey:
         gemini.clear_key(conn)
         raise HTTPException(status_code=428, detail="Gemini rejected the key. Enter a new one.")

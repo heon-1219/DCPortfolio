@@ -16,8 +16,19 @@ from datetime import datetime, timedelta
 import _events as events
 
 API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models"
-# Editable so a future model rename does not require a code change.
-DEFAULT_MODEL = "gemini-2.0-flash"
+# Editable at runtime so a model rename or an exhausted quota does not require
+# a code change. 2.0-flash was the original default; its free-tier daily quota
+# runs out quickly, and 2.5-flash-lite is no longer offered to new keys.
+DEFAULT_MODEL = "gemini-2.5-flash"
+
+# Offered in the UI picker. Kept short on purpose: these are the free-tier
+# chat models that support function calling.
+MODEL_CHOICES = [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+]
 
 SETTING_KEY = "gemini_api_key"
 SETTING_MODEL = "gemini_model"
@@ -29,6 +40,16 @@ class GeminiError(RuntimeError):
 
 class InvalidKey(GeminiError):
     """Raised when Gemini rejects the stored key, so the UI can re-prompt."""
+
+
+class QuotaExceeded(GeminiError):
+    """Free-tier quota or rate limit hit (HTTP 429).
+
+    Distinct from InvalidKey: the key is fine, so it must NOT be cleared —
+    wiping a working key over a temporary rate limit would be a nasty
+    surprise. Surfaced separately so the UI can advise waiting or switching
+    model instead of asking for a new key.
+    """
 
 
 # --- key storage ---------------------------------------------------------
@@ -242,6 +263,13 @@ def _post(url: str, payload: dict) -> dict:
             return json.loads(response.read())
     except urllib.error.HTTPError as exc:
         body = exc.read().decode(errors="replace")
+        if exc.code == 429:
+            raise QuotaExceeded(body[:300]) from exc
+        if exc.code == 404 and "no longer available" in body:
+            raise GeminiError(
+                "That model is no longer available for this key. "
+                "Pick a different one in the model selector."
+            ) from exc
         if exc.code in (400, 401, 403) and (
             "API_KEY" in body or "API key" in body or exc.code == 403
         ):

@@ -59,6 +59,11 @@ They run against the **live Neon database** and clear the tables around each
 run — do not run them once real events matter without pointing `DATABASE_URL`
 at a scratch database first.
 
+`test_gemini_tools.py` stashes and restores the stored Gemini key, because it
+wipes `app_settings`. It did destroy the key once before that guard existed;
+if a run ever leaves `/s` asking for a key again, that is why — re-enter it via
+"Ask Gemini" -> "API key".
+
 ## Locked out?
 
 The lock is per-IP and lasts 15 minutes. To clear immediately:

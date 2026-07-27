@@ -464,6 +464,7 @@ CHAT_HTML = """
 <section class="chat" id="chat">
   <div class="chat-head">
     <strong>Gemini</strong>
+    <select id="model-sel" title="Model — switch if you hit a quota limit"></select>
     <button id="key-btn">API key</button>
     <button id="chat-close">Close</button>
   </div>
@@ -562,9 +563,28 @@ document.addEventListener("DOMContentLoaded", () => {
     else alert("Could not save key.");
   };
 
+  const sel = document.getElementById("model-sel");
   fetch("/api/settings", { credentials: "same-origin" })
     .then(r => r.json())
-    .then(d => { if (!d.gemini_key_set) say("Set your Gemini API key to start.", "sys"); });
+    .then(d => {
+      (d.models || []).forEach(m => {
+        const o = document.createElement("option");
+        o.value = m; o.textContent = m.replace("gemini-", "");
+        if (m === d.model) o.selected = true;
+        sel.appendChild(o);
+      });
+      if (!d.gemini_key_set) say("Set your Gemini API key to start.", "sys");
+    });
+
+  sel.onchange = async () => {
+    const r = await fetch("/api/settings/model", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ model: sel.value })
+    });
+    say(r.ok ? "Model switched to " + sel.value : "Could not switch model.", "sys");
+  };
 });
 """
 
