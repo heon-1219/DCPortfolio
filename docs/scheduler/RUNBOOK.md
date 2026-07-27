@@ -64,6 +64,32 @@ wipes `app_settings`. It did destroy the key once before that guard existed;
 if a run ever leaves `/s` asking for a key again, that is why — re-enter it via
 "Ask Gemini" -> "API key".
 
+## Browser (end-to-end) test
+
+`tests/e2e_scheduler.py` drives the real deployed site and asserts that no
+interaction on `/s` ever navigates away.
+
+    FONTCONFIG_FILE=/tmp/fc/fonts.conf \
+    LD_LIBRARY_PATH=/tmp/chromedeps/root/usr/lib/x86_64-linux-gnu \
+    /tmp/schedvenv/bin/python tests/e2e_scheduler.py
+
+Chromium was installed without root, since `playwright install-deps` needs
+sudo. Recreate it with:
+
+    /tmp/schedvenv/bin/playwright install chromium
+    cd /tmp/chromedeps && apt-get download <libs> && dpkg-deb -x *.deb root/
+
+Libraries needed: libatk1.0-0t64, libatk-bridge2.0-0t64, libatspi2.0-0t64,
+libcups2t64, libxkbcommon0, libxcomposite1, libxdamage1, libxfixes3,
+libxrandr2, libgbm1, libpango-1.0-0, libcairo2, libasound2t64, libnspr4,
+libnss3, libdrm2, libxshmfence1, libxrender1, libxext6, libxi6, libxtst6,
+libxcursor1, libxinerama1, libgtk-3-0t64, libxres1, fonts-liberation.
+A minimal `fonts.conf` is also required or Chromium aborts on first paint.
+
+Known quirk: `page.fill()` silently does nothing against
+chrome-headless-shell here. The DOM is fine (`element.value = ...` from JS
+works), so the test sets the passcode that way.
+
 ## Locked out?
 
 The lock is per-IP and lasts 15 minutes. To clear immediately:

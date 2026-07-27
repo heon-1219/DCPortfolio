@@ -356,3 +356,42 @@ opacity rule, only the day number de-emphasised, every cell bound, swipe
 present, and a reload on selection.
 
 126 tests passing.
+
+---
+
+## 2026-07-27 — Could not reproduce the /sprivate routing report
+
+User reported again that clicking a calendar element routes to `/sprivate`.
+Rather than guess a third time, a real browser was brought up to settle it.
+
+Getting there took some work: `playwright install-deps` needs sudo, which is
+not available. Chromium's runtime libraries were instead downloaded with
+`apt-get download` and unpacked into `/tmp/chromedeps/root` with `dpkg-deb -x`,
+then exposed via `LD_LIBRARY_PATH`; missing libraries were resolved one at a
+time from the loader error until it launched. Chromium then aborted on first
+paint (`SkFontMgr ... Not implemented`) until a minimal `fonts.conf` and
+`fonts-liberation` were supplied.
+
+**Result: the report does not reproduce on the current deployment.** Driving
+the live site — cell click, week/month/day switches, Today, both arrows, and
+creating an event through the dialog — the URL stayed `/s` for every action,
+with zero frame navigations and no JavaScript errors. The event was genuinely
+written (confirmed in the database) and the calendar rendered all 42 cells.
+
+The most likely explanation is that the user is still being served the page
+cached before the `no-store` fix. Until that commit these pages carried
+`cache-control: public`, so a stale copy can persist in the browser.
+
+Two harness pitfalls worth recording:
+- `page.fill()` does nothing against chrome-headless-shell in this
+  environment; the value stays empty and the form then refuses to submit
+  because the field is `required`. The element itself is fine — setting
+  `.value` from JavaScript works — so that is how the test enters the passcode.
+  This briefly looked like an application bug and is not one.
+- An early version of the test added an event while parked on a previous
+  month, then asserted it appeared in `events`. The new-event dialog seeds its
+  date from the anchor, so the event landed outside the loaded window. The
+  event *was* created; the assertion was wrong. The test now returns to today
+  first.
+
+Saved as `tests/e2e_scheduler.py` so this is repeatable rather than a one-off.
