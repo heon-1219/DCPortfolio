@@ -1,0 +1,26 @@
+[Unit]
+Description=Scheduler reminder loop — Telegram alerts for the hidden scheduler
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/projects/dcportfolio/DCPortfolio
+ExecStart=%h/projects/dcportfolio/DCPortfolio/scheduler_bot/venv/bin/python %h/projects/dcportfolio/DCPortfolio/scheduler_bot/reminder_loop.py
+Restart=always
+RestartSec=10
+# Unbuffered so log lines reach journalctl immediately.
+Environment=PYTHONUNBUFFERED=1
+# DATABASE_URL, TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are read from
+# .env.local in WorkingDirectory (chmod 600, git-ignored).
+
+# Modest hardening only. The capability-dropping directives used by system
+# units (ProtectKernelTunables, ProtectControlGroups, RestrictSUIDSGID, ...)
+# make a *user* unit fail at step CAPABILITIES with status 218, so they are
+# deliberately omitted here. ProtectHome is unusable regardless: the service
+# reads .env.local and its venv from $HOME.
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target
