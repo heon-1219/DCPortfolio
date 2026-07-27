@@ -21,14 +21,20 @@ API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models"
 # runs out quickly, and 2.5-flash-lite is no longer offered to new keys.
 DEFAULT_MODEL = "gemini-2.5-flash"
 
-# Offered in the UI picker. Kept short on purpose: these are the free-tier
-# chat models that support function calling.
+# Offered in the UI picker. Which of these a given key may actually call is not
+# knowable from the name: Google allocates free-tier quota per model per
+# project, and a retired model reports 429 on its very first request (it fails
+# the per-minute limit, which usage alone cannot exhaust). So the UI probes the
+# real key rather than trusting this list — see probe_models().
 MODEL_CHOICES = [
     "gemini-2.5-flash",
     "gemini-2.5-pro",
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
 ]
+
+# Tried in order when the selected model turns out to be quota-blocked.
+FALLBACK_ORDER = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]
 
 SETTING_KEY = "gemini_api_key"
 SETTING_MODEL = "gemini_model"
@@ -279,12 +285,70 @@ def _post(url: str, payload: dict) -> dict:
         raise GeminiError(f"Could not reach Gemini: {exc.reason}") from exc
 
 
+def probe_models(key: str) -> dict:
+    """Ask the key itself which models it can call.
+
+    Model names alone do not tell you this — free-tier quota is granted per
+    model per project, so a name that works on one key 429s on another.
+    A blocked model fails instantly and costs nothing; a working one spends a
+    single tiny request, so this is only run on demand.
+    """
+    payload = {
+        "contents": [{"role": "user", "parts": [{"text": "hi"}]}],
+        "generationConfig": {"maxOutputTokens": 1},
+    }
+    results = {}
+    for model in MODEL_CHOICES:
+        try:
+            _post(f"{API_ROOT}/{model}:generateContent?key={key}", payload)
+            results[model] = "ok"
+        except QuotaExceeded:
+            results[model] = "blocked"
+        except GeminiError:
+            results[model] = "unavailable"
+    return results
+
+
 def chat(conn, message: str, history: list) -> dict:
     """One conversational turn, resolving any tool calls Gemini requests."""
     key = get_key(conn)
     if not key:
         raise GeminiError("No Gemini API key saved yet.")
+
     model = get_model(conn)
+    switched_from = None
+    # A model can be quota-blocked from the very first call, so verify the
+    # selection is usable before burning the (larger) real request on it.
+    try:
+        _post(
+            f"{API_ROOT}/{model}:generateContent?key={key}",
+            {
+                "contents": [{"role": "user", "parts": [{"text": "hi"}]}],
+                "generationConfig": {"maxOutputTokens": 1},
+            },
+        )
+    except QuotaExceeded:
+        for candidate in FALLBACK_ORDER:
+            if candidate == model:
+                continue
+            try:
+                _post(
+                    f"{API_ROOT}/{candidate}:generateContent?key={key}",
+                    {
+                        "contents": [{"role": "user", "parts": [{"text": "hi"}]}],
+                        "generationConfig": {"maxOutputTokens": 1},
+                    },
+                )
+            except GeminiError:
+                continue
+            switched_from, model = model, candidate
+            set_model(conn, candidate)
+            break
+        else:
+            raise
+    except GeminiError:
+        pass  # Not a quota problem; let the real request surface it.
+
     url = f"{API_ROOT}/{model}:generateContent?key={key}"
 
     memory = events.build_memory(conn)
@@ -312,7 +376,12 @@ def chat(conn, message: str, history: list) -> dict:
         calls = [p["functionCall"] for p in parts if "functionCall" in p]
         if not calls:
             text = "".join(p.get("text", "") for p in parts).strip()
-            return {"reply": text or "(no reply)", "actions": actions}
+            return {
+                "reply": text or "(no reply)",
+                "actions": actions,
+                "model": model,
+                "switched_from": switched_from,
+            }
 
         contents.append({"role": "model", "parts": parts})
         responses = []
@@ -327,4 +396,9 @@ def chat(conn, message: str, history: list) -> dict:
         contents.append({"role": "user", "parts": responses})
         payload["contents"] = contents
 
-    return {"reply": "Stopped after too many tool steps.", "actions": actions}
+    return {
+        "reply": "Stopped after too many tool steps.",
+        "actions": actions,
+        "model": model,
+        "switched_from": switched_from,
+    }

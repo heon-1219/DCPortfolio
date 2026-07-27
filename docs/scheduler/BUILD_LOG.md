@@ -197,3 +197,41 @@ cannot initiate. Until `/start` is sent to @heonschedulebot, delivery fails
 with "chat not found" and reminders stay queued for retry (verified: the loop
 retried rather than dropping). Live Gemini calls remain untested until an AI
 Studio key is entered in `/s`.
+
+---
+
+## 2026-07-27 — Gemini quota: models are blocked, not exhausted
+
+User hit "quota exceeded" on `gemini-2.0-flash-lite` **without having called
+it**. Probing the real key explained why:
+
+    gemini-2.5-flash       ok
+    gemini-2.5-pro         blocked
+    gemini-2.0-flash       blocked
+    gemini-2.0-flash-lite  blocked
+
+The 429 detail is the giveaway: a blocked model violates
+`GenerateRequestsPerMinutePerProjectPerModel-FreeTier` on its *first* request.
+A per-minute limit cannot be exhausted by a user who never called the model —
+so the free-tier allocation for those models on this project is effectively
+zero. They are retired from the free tier, not used up.
+
+Lesson: a model's availability is **not** knowable from its name. Quota is
+granted per model per project, so the only honest source is the key itself.
+The earlier fix (hardcoding a better default) was therefore only half a fix —
+the dropdown still offered three models that could never work.
+
+Changes:
+- `probe_models()` + `GET /api/settings/models/probe` — asks the key which
+  models it can actually call. A "Check" button in the chat header marks dead
+  options as disabled and `(blocked)`.
+- **Automatic fallback**: `chat()` now validates the selected model with a
+  1-token request first, and on 429 walks `FALLBACK_ORDER` to a working model,
+  persists the switch, and reports it as `switched_from` so the UI can say so.
+  Verified by setting the model to `gemini-2.0-flash-lite` and sending a real
+  message: it switched to `gemini-2.5-flash`, created the event, and saved the
+  new selection.
+- The pre-flight costs one tiny request but prevents burning the full
+  tool-calling exchange against a model that cannot answer.
+
+100 tests passing; `test_gemini_tools.py` confirmed it restores the live key.

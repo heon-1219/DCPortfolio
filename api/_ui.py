@@ -465,6 +465,7 @@ CHAT_HTML = """
   <div class="chat-head">
     <strong>Gemini</strong>
     <select id="model-sel" title="Model — switch if you hit a quota limit"></select>
+    <button id="probe-btn" title="Test which models your key can actually use">Check</button>
     <button id="key-btn">API key</button>
     <button id="chat-close">Close</button>
   </div>
@@ -528,6 +529,11 @@ async function send() {
     }
     pending.textContent = d.reply;
     history.push({ role: "model", text: d.reply });
+    if (d.switched_from) {
+      say(d.switched_from + " was quota-blocked; switched to " + d.model + ".", "sys");
+      const s = document.getElementById("model-sel");
+      if (s) s.value = d.model;
+    }
     // A tool call means the calendar changed underneath us.
     if (d.actions && d.actions.length) load();
   } catch (err) {
@@ -575,6 +581,23 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       if (!d.gemini_key_set) say("Set your Gemini API key to start.", "sys");
     });
+
+  document.getElementById("probe-btn").onclick = async () => {
+    say("Testing which models your key can use...", "sys");
+    const r = await fetch("/api/settings/models/probe", { credentials: "same-origin" });
+    const d = await r.json();
+    if (!r.ok) { say(d.detail || "Probe failed.", "sys"); return; }
+    const lines = [];
+    Object.entries(d.results).forEach(([m, state]) => {
+      lines.push((state === "ok" ? "OK      " : "blocked ") + m);
+      const opt = Array.from(sel.options).find(o => o.value === m);
+      if (opt) {
+        opt.disabled = state !== "ok";
+        opt.textContent = m.replace("gemini-", "") + (state === "ok" ? "" : " (blocked)");
+      }
+    });
+    say(lines.join("\n"), "sys");
+  };
 
   sel.onchange = async () => {
     const r = await fetch("/api/settings/model", {

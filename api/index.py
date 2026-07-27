@@ -302,6 +302,24 @@ def get_settings(request: Request):
         conn.close()
 
 
+@app.get("/api/settings/models/probe")
+def probe_models(request: Request):
+    """Ask the key which models it can actually call.
+
+    Free-tier quota is granted per model per project, so the model list alone
+    cannot tell us what will work — only the key can.
+    """
+    _require_full(request)
+    conn = _conn()
+    try:
+        key = gemini.get_key(conn)
+        if not key:
+            raise HTTPException(status_code=428, detail="No Gemini API key saved yet.")
+        return {"results": gemini.probe_models(key), "current": gemini.get_model(conn)}
+    finally:
+        conn.close()
+
+
 @app.post("/api/settings/model")
 def set_model(request: Request, payload: dict = Body(...)):
     _require_full(request)
