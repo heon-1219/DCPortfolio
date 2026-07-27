@@ -55,7 +55,11 @@ main { padding: .6rem .9rem; }
   min-height: 4.6rem; background: var(--panel); border: 1px solid var(--line-soft);
   border-radius: 7px; padding: .3rem; overflow: hidden; cursor: pointer;
 }
-.cell.dim { opacity: .38; }
+/* Days spilling in from the neighbouring month are fully usable — they are
+   only de-emphasised, never faded out. Dimming the whole cell made them read
+   as disabled, especially stacked with the near-black "busy" background. */
+.cell.dim { background: #161b23; }
+.cell.dim .num { color: #6f7b8d; }
 .cell.today { border-color: var(--accent); }
 .cell.busy { background: var(--busy); border-color: #000; }
 .cell .num { font-size: .72rem; color: var(--muted); margin-bottom: .2rem; }
@@ -305,8 +309,11 @@ function esc(s) {
 
 function bindCells() {
   document.querySelectorAll(".cell").forEach(c => c.onclick = () => {
+    // Every day is selectable, including ones belonging to the neighbouring
+    // month. Moving the anchor keeps the calendar on that day's month when the
+    // user switches back to the month view.
     anchor = new Date(c.dataset.day + "T00:00:00");
-    view = "day"; render();
+    view = "day"; load();
   });
   if (MODE === "full") {
     document.querySelectorAll(".ev").forEach(el => el.onclick = ev => {
@@ -322,7 +329,26 @@ function step(dir) {
   anchor = new Date(anchor); load();
 }
 
+function bindSwipe() {
+  const grid = document.getElementById("grid");
+  let x0 = null, y0 = null;
+  grid.addEventListener("touchstart", e => {
+    x0 = e.changedTouches[0].clientX;
+    y0 = e.changedTouches[0].clientY;
+  }, { passive: true });
+  grid.addEventListener("touchend", e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    const dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    // Only a decisive horizontal swipe counts, so vertical scrolling and taps
+    // are never mistaken for navigation.
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+  }, { passive: true });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  bindSwipe();
   document.querySelectorAll(".views button").forEach(b =>
     b.onclick = () => { view = b.dataset.view; load(); });
   document.getElementById("prev").onclick = () => step(-1);

@@ -57,6 +57,19 @@ for name, html in [("/s", ui.scheduler_page()), ("/sprivate", ui.private_page())
     check(f"{name} contains no link to another scheduler page",
           'href="/sprivate"' not in html and 'href="/s"' not in html)
 
+# --- month grid: neighbouring-month days stay usable ---------------------
+for name, html in [("/s", ui.scheduler_page()), ("/spublic", ui.public_page())]:
+    check(f"{name} does not fade out-of-month cells",
+          ".cell.dim { opacity" not in html)
+    check(f"{name} de-emphasises only the day number",
+          ".cell.dim .num" in html)
+    check(f"{name} binds a click on every cell",
+          'querySelectorAll(".cell").forEach' in html)
+    check(f"{name} supports swipe between periods", "bindSwipe" in html)
+    # A spill-over tap must reload data for the month it belongs to.
+    check(f"{name} reloads after selecting a day",
+          'view = "day"; load();' in html)
+
 conn = db.connect(); auth.clear_failures(conn, "s", "testclient")
 auth.clear_failures(conn, "sprivate", "testclient"); conn.close()
 

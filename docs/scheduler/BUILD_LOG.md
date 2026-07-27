@@ -321,3 +321,38 @@ the user's device is unconfirmed — the caching path is the mechanism that fits
 the evidence.
 
 116 tests passing.
+
+---
+
+## 2026-07-27 — Month view: neighbouring-month days looked disabled
+
+User: "just because we're in month view, don't make dates of other months
+unavailable — make it so that we can scroll and access."
+
+The data was never the problem. The month grid requests all 42 rendered days,
+and a check confirmed the API returns events *and* availability for the
+spill-over days (an event placed on 2026-07-27 appears correctly in the August
+grid, and the availability map covers all 42 entries). Those cells were also
+already clickable.
+
+It was purely presentation: `.cell.dim { opacity: .38 }` faded the entire cell
+to 38%. Stacked with the near-black `busy` background, a spill-over day that
+was also busy rendered as an unreadable dark block — indistinguishable from
+"you cannot use this".
+
+Changes:
+- Replaced the whole-cell fade with a slightly recessed background and a muted
+  day *number* only, so those days read as secondary but plainly usable and
+  their event chips stay legible.
+- Selecting a day now calls `load()` rather than `render()`, so tapping a
+  spill-over day refetches around the month it actually belongs to instead of
+  reusing the previous window.
+- Added horizontal swipe on the grid to move between months/weeks/days.
+  Guarded to require a decisive horizontal gesture (>60px and 1.5x the vertical
+  delta) so vertical scrolling and ordinary taps are never misread.
+
+Regression checks added to `tests/test_scheduler_routing.py`: no whole-cell
+opacity rule, only the day number de-emphasised, every cell bound, swipe
+present, and a reload on selection.
+
+126 tests passing.
