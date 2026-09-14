@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=yes" />
+    <title>Financial Product Agent / Seheon David Chang</title>
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main>
+      <p class="breadcrumb"><a href="../../">Portfolio</a> &gt; Financial Product Agent</p>
+      <h1 class="project-page-title">Financial Product Agent</h1>
+      <p class="project-subtitle">Evidence-grounded AI analyst for financial products</p>
+
+      <section class="issue-summary">
+        <h2>Issue / Solution</h2>
+        <div class="issue-solution-content">
+          <p>
+            <strong>The Issue:</strong> Questions like "Which sellable KRW bonds are rated AA- or
+            higher?" or "Which domestic ETFs hold this company, and at what weight?" can only be
+            answered by filtering and aggregating tens of thousands of product records: bonds,
+            domestic and overseas ETFs, and public funds, each with its own schema, codes, and
+            intentionally missing values. General-purpose LLMs answer these fluently but invent
+            products and numbers, and they rarely admit when the data cannot support an answer.
+            In finance, a confident wrong answer is worse than none.
+          </p>
+          <p>
+            <strong>The Solution:</strong> I built <em>Financial Product Agent</em>, a
+            question-answering API that treats the LLM as an analyst who must look things up.
+            Each question is pre-analyzed (entity resolution and ontology validation), then
+            deterministically routed to only the stores it needs: a SQLite database, a
+            1.08M-triple knowledge graph, hybrid lexical/vector search, or reference documents.
+            An LLM tool-calling loop then finishes the computation in SQL. Every response carries
+            its evidence (tables, as-of dates, the exact SQL or SPARQL, product codes) and a
+            numbered reasoning trace, and any answer produced without a single lookup is rejected
+            and sent back.
+          </p>
+        </div>
+      </section>
+
+      <h2>Overview</h2>
+      <p>
+        Financial Product Agent is a Python/FastAPI service over four Korean product masters
+        (domestic bonds, domestic ETFs/ETNs, overseas ETFs/ETNs, and public funds) totaling
+        53,375 product records, plus 22,599 ETF constituent holdings. I built it for the
+        financial-product agent challenge at the Mirae Asset Securities AI Festival 2026, where
+        answer generation had to run on NCP HyperCLOVA X within a 300-second limit per question.
+      </p>
+      <p>
+        The ontology is an execution layer, not documentation. Six Turtle files are loaded at
+        runtime to generate the LLM's schema cards (column meanings, units, allowed values),
+        validate a question's values before any query runs, and drive inference inside the
+        knowledge graph.
+      </p>
+
+      <h2>System Architecture</h2>
+      <p>
+        A request flows down the left column: pre-analysis, then a retrieval plan that prefetches
+        facts before the model runs. The agent works with the knowledge base on the right through
+        tools, and every answer exits through a strict three-state policy.
+      </p>
+
+      <div class="architecture-diagram">
+        <h3>System Architecture</h3>
+        <svg viewBox="0 0 800 475" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-fin" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#475569" />
+            </marker>
+            <filter id="shadow-fin" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+            </filter>
+          </defs>
+
+          <!-- Left column: request flow -->
+          <rect x="20" y="20" width="210" height="60" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="125" y="45" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#0f172a" text-anchor="middle">GET /answer</text>
+          <text x="125" y="64" font-family="Helvetica, sans-serif" font-size="11" fill="#334155" text-anchor="middle">question_id, question</text>
+
+          <rect x="20" y="115" width="210" height="70" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="125" y="142" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#083344" text-anchor="middle">Pre-analysis</text>
+          <text x="125" y="161" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">Entity resolution,</text>
+          <text x="125" y="176" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">ontology value validation</text>
+
+          <rect x="20" y="220" width="210" height="70" rx="8" fill="#ecfeff" stroke="#0891b2" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="125" y="247" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#083344" text-anchor="middle">Retrieval Plan (Round 0)</text>
+          <text x="125" y="266" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">Prefetch only the stores</text>
+          <text x="125" y="281" font-family="Helvetica, sans-serif" font-size="11" fill="#0e7490" text-anchor="middle">this question needs</text>
+
+          <rect x="20" y="345" width="210" height="80" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="125" y="372" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#4c0519" text-anchor="middle">Ontology (6 .ttl files)</text>
+          <text x="125" y="391" font-family="Helvetica, sans-serif" font-size="11" fill="#be123c" text-anchor="middle">Schema cards, allowed values,</text>
+          <text x="125" y="406" font-family="Helvetica, sans-serif" font-size="11" fill="#be123c" text-anchor="middle">graph inference (TBox)</text>
+
+          <path d="M 125 80 L 125 115" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-fin)" />
+          <path d="M 125 185 L 125 220" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-fin)" />
+          <path d="M 20 385 L 8 385 L 8 150 L 20 150" fill="none" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-fin)" />
+
+          <!-- Middle column: agent and answer policy -->
+          <rect x="290" y="170" width="220" height="120" rx="8" fill="#faf5ff" stroke="#7e22ce" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="400" y="205" font-family="Helvetica, sans-serif" font-weight="bold" font-size="14" fill="#3b0764" text-anchor="middle">LLM Agent</text>
+          <text x="400" y="228" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">HyperCLOVA X (HCX-005)</text>
+          <text x="400" y="246" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">Tool-calling loop,</text>
+          <text x="400" y="264" font-family="Helvetica, sans-serif" font-size="11" fill="#6b21a8" text-anchor="middle">120s budget · ≤ 8 rounds</text>
+
+          <rect x="290" y="335" width="220" height="60" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="400" y="360" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#451a03" text-anchor="middle">final_answer</text>
+          <text x="400" y="380" font-family="Helvetica, sans-serif" font-size="10" fill="#92400e" text-anchor="middle">answered / cannot_confirm / clarify</text>
+
+          <rect x="270" y="420" width="260" height="46" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="400" y="439" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#0f172a" text-anchor="middle">JSON Response</text>
+          <text x="400" y="456" font-family="Helvetica, sans-serif" font-size="10" fill="#334155" text-anchor="middle">retrieved_context · think_trace · answer</text>
+
+          <path d="M 230 255 L 290 255" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-fin)" />
+          <text x="260" y="247" font-family="Helvetica, sans-serif" font-size="9" fill="#475569" text-anchor="middle">facts</text>
+          <path d="M 400 290 L 400 335" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-fin)" />
+          <path d="M 400 395 L 400 420" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow-fin)" />
+
+          <!-- Right column: knowledge base -->
+          <rect x="580" y="20" width="200" height="58" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="680" y="44" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#052e16" text-anchor="middle">SQLite RDB</text>
+          <text x="680" y="63" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">5 views · 215 columns</text>
+
+          <rect x="580" y="92" width="200" height="58" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="680" y="116" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#052e16" text-anchor="middle">Knowledge Graph</text>
+          <text x="680" y="135" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">rdflib · 1,082,874 triples</text>
+
+          <rect x="580" y="164" width="200" height="58" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="680" y="188" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#052e16" text-anchor="middle">BM25 Lexical Index</text>
+          <text x="680" y="207" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">75,089 documents</text>
+
+          <rect x="580" y="236" width="200" height="58" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="680" y="260" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#052e16" text-anchor="middle">Vector Index</text>
+          <text x="680" y="279" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">TF-IDF + LSA · 384 dims</text>
+
+          <rect x="580" y="308" width="200" height="58" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow-fin)" />
+          <text x="680" y="332" font-family="Helvetica, sans-serif" font-weight="bold" font-size="13" fill="#052e16" text-anchor="middle">Reference Docs</text>
+          <text x="680" y="351" font-family="Helvetica, sans-serif" font-size="11" fill="#15803d" text-anchor="middle">Markdown chunks</text>
+
+          <g stroke="#475569" stroke-width="1.2" fill="none">
+            <path d="M 510 230 L 580 49" marker-start="url(#arrow-fin)" marker-end="url(#arrow-fin)" />
+            <path d="M 510 230 L 580 121" marker-end="url(#arrow-fin)" />
+            <path d="M 510 230 L 580 193" marker-end="url(#arrow-fin)" />
+            <path d="M 510 230 L 580 265" marker-end="url(#arrow-fin)" />
+            <path d="M 510 230 L 580 337" marker-end="url(#arrow-fin)" />
+          </g>
+          <text x="680" y="388" font-family="Courier, monospace" font-size="9.5" fill="#475569" text-anchor="middle">sql_query · graph_query</text>
+          <text x="680" y="402" font-family="Courier, monospace" font-size="9.5" fill="#475569" text-anchor="middle">search_products · search_documents</text>
+        </svg>
+      </div>
+
+      <h2>What I Built</h2>
+      <ul>
+        <li>An ETL pipeline that loads the four Excel product masters and a scraped ETF-constituent dataset into SQLite, with ISO dates, a redefined "sellable" flag, fund-family keys, normalized asset managers, and five views exposing all 215 columns.</li>
+        <li>Six domain ontologies in Turtle (bonds, domestic ETFs, overseas ETFs, funds, ETF constituents, and shared classes) that the runtime turns into LLM schema cards and value validators.</li>
+        <li>A knowledge graph of 1,082,874 triples (965,823 asserted, 117,051 inferred) built from the database plus curated dictionaries of 77 asset managers, 48 bilingual themes, and 97 companies, queryable through SPARQL and neighbor lookups.</li>
+        <li>Hybrid retrieval over 75,089 documents: BM25 with Korean syllable bigrams and exact-name boosting, plus a TF-IDF + LSA vector index that runs deterministically without any embedding API key.</li>
+        <li>A deterministic retrieval router that prefetches only the stores a question needs before the model runs, and records which stores it chose and why in the trace.</li>
+        <li>The tool-calling agent loop with a time budget, evidence and trace collection, and a three-state answer policy, running on HyperCLOVA X with Anthropic and OpenAI-compatible providers available for comparison.</li>
+        <li>A FastAPI service (<code>GET /answer</code>, <code>GET /health</code>) that always returns 200 with the same five-field schema, even on internal errors.</li>
+        <li>An evaluation harness: a 54-question answer key recomputed from the data at grading time, a 1,313-query retrieval audit, and a 194-test suite.</li>
+      </ul>
+
+      <h2>Grounding Before Fluency</h2>
+      <p>
+        The central design decision is that the model is never trusted to answer from memory. In
+        testing, five runs of the same question split cleanly: every run that called a tool was
+        correct, and every run that answered without one was wrong. So the agent rejects any final
+        answer submitted without at least one lookup and sends the model back to retrieve.
+      </p>
+      <p>
+        Answers are held to the data in three more ways. Question values are checked against the
+        ontology before any query runs, so a request for a nonexistent credit grade like "AAAA" or
+        a risk grade of 7 is answered as unconfirmable instead of producing an empty or invented
+        list. Every answer must declare one of three states (answered, cannot confirm, or clarify),
+        and a refusal ends as a refusal, with no list of substitute products appended. Missing
+        values stay missing: nulls are never counted or sorted as zero, and the answer says the
+        data is unavailable.
+      </p>
+      <p>
+        Resolved identifiers are carried all the way into SQL. For 32 companies, the name a user
+        types differs from how the source data stores it (TSMC is stored as "TSMC ADR", for
+        example), so a name-based filter would silently return zero rows. The agent is handed the
+        store's actual company codes instead, and graph results ship with the product IDs that SQL
+        needs.
+      </p>
+
+      <h2>Retrieval, Decided by Measurement</h2>
+      <p>
+        The hybrid search design came from measurement, not preference. Reciprocal Rank Fusion was
+        the first approach, but on this corpus it let loosely related funds that both retrievers
+        ranked mid-list push out the best lexical match; a query for battery cathode products
+        returned an unrelated fund of funds first. The final design gives the head of the result
+        list to lexical matches and reserves roughly the bottom 30% of slots for documents only
+        semantic search found, so hybrid can never rank worse than lexical at the top.
+      </p>
+      <p>
+        Vector quality was tuned the same way. Korean product names are full of boilerplate terms
+        such as "securities investment trust" and "exchange-traded", which dominated the LSA space.
+        Dropping the most frequent tokens (<code>max_df = 0.005</code>) raised hits from 1 to 6 of
+        7 semantic probes.
+      </p>
+      <p>
+        I then measured how much the vector index actually adds, using 1,313 queries generated
+        from the data across seven types (official names, codes, abbreviations, holding names,
+        themes, typos, and synonyms). Recall@10 by query type:
+      </p>
+      <ul>
+        <li><strong>Official names:</strong> lexical 100.0%, vector 60.0%, hybrid 100.0%</li>
+        <li><strong>Codes and tickers:</strong> lexical 49.4%, vector 1.9%, hybrid 49.4%</li>
+        <li><strong>Typos:</strong> lexical 93.1%, vector 45.0%, hybrid 93.1%</li>
+        <li><strong>Themes:</strong> lexical 87.0%, vector 55.8%, hybrid 90.5%</li>
+      </ul>
+      <p>
+        I kept the honest conclusion: hybrid matches lexical exactly at recall@1 and @5, the vector
+        index's net gain is +3.5 percentage points of recall@10 on theme queries, and typo
+        tolerance comes from BM25's Korean bigrams rather than from semantic search.
+      </p>
+
+      <h2>Knowledge Graph &amp; Ontology</h2>
+      <p>
+        At startup, the ontology's class definitions (TBox) are merged into the same graph as the
+        instance data, and three rules are materialized: superclass inheritance (a domestic ETF is
+        also an ETF and a product), inverse relations (<code>managedBy</code> and
+        <code>manages</code>), and domain/range type inference. Queries like "every product this
+        manager runs" then work without any extra loading.
+      </p>
+      <p>
+        Modeling choices kept the graph clean. ETF holding weights were first written as one
+        predicate per company, which ballooned the schema to 5,082 predicates. Moving constituents
+        into a SQLite table made weight an ordinary column and cut that to 73, and because the
+        graph's holdings are generated from that same table, SQL and graph answers cannot disagree.
+        Company affiliate relations are derived from group-themed ETFs: 608 edges across 8 business
+        groups and 65 companies, with no false positives found. They are labeled affiliates rather
+        than subsidiaries, because the data contains no ownership stakes.
+      </p>
+
+      <h2>Data Quality</h2>
+      <p>
+        Missing values in the provided data were intentional, so I left them unfilled, but I
+        repaired gaps in columns I derived. Fund asset-manager names were 25.4% missing because they
+        had been guessed from fund-name prefixes; deriving them from the institution code the source
+        provides for every row raised coverage from 74.6% to 91.2%, with the fill source recorded on
+        each row. The constituent scraper had been discarding stock codes, and keeping them gave 79%
+        of holdings an exact company identifier. Companies are now matched only by code, never by
+        fuzzy name similarity, after an early substring match misattributed 677 rows.
+      </p>
+
+      <h2>Results</h2>
+      <p>
+        The official evaluation questions were not published, so I built a 54-question answer key
+        whose correct answers are recomputed from the provided data with SQL and graph queries at
+        grading time. Measured with HyperCLOVA X (HCX-005):
+      </p>
+
+      <div class="meta-list">
+        <div class="box">
+          <div class="dense">
+            <h3>Answer Accuracy</h3>
+            47 / 54 (87%)
+          </div>
+          <p class="small">By difficulty: easy 8/10, medium 14/16, and hard 6/9.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Unanswerable Questions</h3>
+            19 / 19 refused
+          </div>
+          <p class="small">Every question the data cannot support was correctly answered as unconfirmable.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Latency</h3>
+            20.6s average
+          </div>
+          <p class="small">Longest response 87.4s, with no responses over the 300-second limit.</p>
+        </div>
+        <div class="box">
+          <div class="dense">
+            <h3>Test Suite</h3>
+            194 passing tests
+          </div>
+          <p class="small">Unit and contract tests on a stub LLM, plus a slow full-ETL validation run.</p>
+        </div>
+      </div>
+
+      <h2>Deployment</h2>
+      <p>
+        The API runs in Docker Compose on a Naver Cloud VPC server (Ubuntu 24.04, 4 vCPU / 16 GB),
+        served on port 80. The image loads the product store and warms the vector cache at build
+        time. Building the knowledge graph with inference takes about three minutes at startup, so
+        the health check allows a 420-second start period, and the container restarts automatically
+        after crashes or reboots. API keys live in an <code>.env</code> file that is excluded from
+        the image and read at runtime.
+      </p>
+
+      <h2>Stack</h2>
+      <p>
+        Python 3.12, FastAPI, Uvicorn, Pydantic, SQLite, pandas, openpyxl, rdflib (RDF, OWL,
+        SPARQL), Turtle ontologies, rank-bm25, scikit-learn (TF-IDF, Truncated SVD), NumPy,
+        PyMuPDF, NCP HyperCLOVA X (function calling), Anthropic and OpenAI SDKs, Docker Compose,
+        Naver Cloud Platform, pytest.
+      </p>
+
+      <p><a href="../../#projects">(go back)</a></p>
+    </main>
+  </body>
+</html>
